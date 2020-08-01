@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="godot_arcore_setup_activity_label">Godot ARCore Setup</string>
+	<string name="setup_arcore_request">Please setup ARCore to use the app</string>
+	<string name="missing_camera_permission_warning">Camera permission is needed to run this application</string>
+</resources>

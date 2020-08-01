@@ -1,0 +1,3 @@
+[submodule "plugin/libs/godot-cpp"]
+	path = plugin/libs/godot-cpp
+	url = https://github.com/GodotNativeTools/godot-cpp

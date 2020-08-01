@@ -1,0 +1,88 @@
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+ext.pluginVersionCode = 1
+ext.pluginVersionName = "1.0.0"
+
+/*
+The ARCore aar library contains the native shared libraries. These are
+extracted before building to a temporary directory.
+*/
+def arcore_libpath = "${buildDir}/arcore-native"
+
+// Create a configuration to mark which aars to extract .so files from
+configurations { natives }
+
+android {
+    buildToolsVersion = versions.buildTools
+    compileSdkVersion versions.compileSdk
+    ndkVersion "21.1.6352462"
+
+    defaultConfig {
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
+        versionCode pluginVersionCode
+        versionName pluginVersionName
+
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++11", "-Wall"
+                arguments "-DANDROID_STL=c++_static",
+                    "-DARCORE_LIBPATH=${arcore_libpath}/jni",
+                    "-DARCORE_INCLUDE=${project.rootDir}/plugin/src/main/cpp/include"
+            }
+        }
+
+        ndk {
+            abiFilters "arm64-v8a", "armeabi-v7a", "x86"
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
+    libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.outputFileName = "gdarcore.$pluginVersionName.${variant.name}.aar"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlinVersion")
+    implementation "androidx.legacy:legacy-support-v4:1.0.0"
+    implementation 'com.google.ar:core:1.18.0'
+    natives 'com.google.ar:core:1.18.0'
+    compileOnly fileTree(dir: 'libs', include: ['godot-lib*.aar'])
+}
+
+// Extracts the shared libraries from aars in the natives configuration.
+// This is done so that NDK builds can access these libraries.
+task extractNativeLibraries() {
+    // Extract every time.
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        configurations.natives.files.each { f ->
+            copy {
+                from zipTree(f)
+                into arcore_libpath
+                include "jni/**/*"
+            }
+        }
+    }
+}
+
+tasks.whenTaskAdded {
+    task-> if (task.name.contains("external") && !task.name.contains("Clean")) {
+        task.dependsOn(extractNativeLibraries)
+    }
+}

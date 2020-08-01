@@ -1,0 +1,26 @@
+apply from: 'config.gradle'
+
+buildscript {
+    apply from: 'config.gradle'
+
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:$versions.gradlePluginVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlinVersion"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    dependsOn(":ARCore:clean")
+    delete rootProject.buildDir
+}
