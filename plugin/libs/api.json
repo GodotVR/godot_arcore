@@ -6,7 +6,7 @@
 		"singleton": true,
 		"singleton_name": "GlobalConstants",
 		"instanciable": false,
-		"is_reference": true,
+		"is_reference": false,
 		"constants": {
 			"BUTTON_LEFT": 1,
 			"BUTTON_MASK_LEFT": 1,
@@ -1708,6 +1708,25 @@
 		],
 		"methods": [
 			{
+				"name": "add_interface",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "interface",
+						"type": "ARVRInterface",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
 				"name": "center_on_hmd",
 				"return_type": "void",
 				"is_editor": false,
@@ -1727,6 +1746,25 @@
 					{
 						"name": "keep_height",
 						"type": "bool",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "clear_primary_interface_if",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "interface",
+						"type": "ARVRInterface",
 						"has_default_value": false,
 						"default_value": ""
 					}
@@ -1917,6 +1955,25 @@
 				"has_varargs": false,
 				"is_from_script": false,
 				"arguments": [
+				]
+			},
+			{
+				"name": "remove_interface",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "interface",
+						"type": "ARVRInterface",
+						"has_default_value": false,
+						"default_value": ""
+					}
 				]
 			},
 			{
@@ -38729,6 +38786,25 @@
 				"has_varargs": false,
 				"is_from_script": false,
 				"arguments": [
+				]
+			},
+			{
+				"name": "get_texture",
+				"return_type": "RID",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "which",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
 				]
 			},
 			{

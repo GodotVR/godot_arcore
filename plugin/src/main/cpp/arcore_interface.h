@@ -31,9 +31,12 @@
 #ifndef ARCORE_INTERFACE_H
 #define ARCORE_INTERFACE_H
 
+#include <map>
+
 #include "ARVRInterface.hpp"
 #include "ARVRPositionalTracker.hpp"
 #include "CameraFeed.hpp"
+#include "CameraMatrix.hpp"
 
 #include "include/arcore_c_api.h"
 
@@ -60,8 +63,9 @@ public:
 	};
 
 private:
+  static ARCoreInterface *singleton_instance;
+
 	InitStatus init_status;
-	GodotJavaWrapper *godot_java;
 
 	ArSession *ar_session;
 	ArFrame *ar_frame;
@@ -72,7 +76,6 @@ private:
 	uint last_anchor_id;
 
 	Ref<CameraFeed> feed;
-	bool feed_was_setup;
 
 	Transform view;
 	CameraMatrix projection;
@@ -84,18 +87,25 @@ private:
 		bool stale;
 	};
 
-	VMap<ArPlane *, anchor_map *> anchors;
+  Tracking_status tracking_state;
+
+	std::map<ArPlane *, anchor_map *> anchors;
 	void make_anchors_stale();
 	void remove_stale_anchors();
 
 protected:
-	static void _bind_methods();
+	static void _register_methods();
 
 public:
+  static ARCoreInterface* get_singleton_instance();
+  static void delete_singleton_instance();
+
+  ARVRInterface::Tracking_status get_tracking_status() const;
+
 	void _resume();
 	void _pause();
 
-	virtual StringName get_name() const;
+	virtual String get_name() const;
 	virtual int get_capabilities() const;
 
 	virtual int get_camera_feed_id();
