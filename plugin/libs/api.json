@@ -6,7 +6,7 @@
 		"singleton": true,
 		"singleton_name": "GlobalConstants",
 		"instanciable": false,
-		"is_reference": false,
+		"is_reference": true,
 		"constants": {
 			"BUTTON_LEFT": 1,
 			"BUTTON_MASK_LEFT": 1,
@@ -1271,12 +1271,12 @@
 	},
 	{
 		"name": "ARVRPositionalTracker",
-		"base_class": "Object",
+		"base_class": "Reference",
 		"api_type": "core",
 		"singleton": false,
 		"singleton_name": "",
 		"instanciable": true,
-		"is_reference": false,
+		"is_reference": true,
 		"constants": {
 			"TRACKER_HAND_UNKNOWN": 0,
 			"TRACKER_LEFT_HAND": 1,
@@ -1727,6 +1727,25 @@
 				]
 			},
 			{
+				"name": "add_tracker",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "tracker",
+						"type": "ARVRPositionalTracker",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
 				"name": "center_on_hmd",
 				"return_type": "void",
 				"is_editor": false,
@@ -1971,6 +1990,25 @@
 					{
 						"name": "interface",
 						"type": "ARVRInterface",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "remove_tracker",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "tracker",
+						"type": "ARVRPositionalTracker",
 						"has_default_value": false,
 						"default_value": ""
 					}

@@ -48,6 +48,20 @@
 	ARCore interface between Android and Godot
 **/
 
+ARCoreInterface* ARCoreInterface::singleton_instance = nullptr;
+
+ARCoreInterface* ARCoreInterface::get_singleton_instance() {
+  if (singleton_instance == nullptr) {
+    singleton_instance = new ARCoreInterface();
+  }
+  return singleton_instance;
+}
+
+void ARCoreInterface::delete_singleton_instance() {
+  delete singleton_instance;
+  singleton_instance = nullptr;
+}
+
 String ARCoreInterface::get_name() const {
 	return "ARCore";
 }
