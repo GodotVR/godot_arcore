@@ -6,10 +6,13 @@
 #include <gen/ARVRServer.hpp>
 #include <arcore_interface.h>
 #include <core/Godot.hpp>
+#include <common.h>
 #include "godot_arcore.h"
 
 void GDN_EXPORT godot_arcore_gdnative_init(godot_gdnative_init_options *options) {
-  godot::Godot::gdnative_init(options);
+    godot::Godot::gdnative_init(options);
+    ALOG_ASSERT(godot::android_api->version.major >= 1 && godot::android_api->version.minor > 1,
+                "GDNative Android API version should be >= 1.2");
 }
 
 void GDN_EXPORT godot_arcore_gdnative_singleton() {
