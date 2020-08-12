@@ -11,7 +11,7 @@
 
 void GDN_EXPORT godot_arcore_gdnative_init(godot_gdnative_init_options *options) {
     godot::Godot::gdnative_init(options);
-    ALOG_ASSERT(godot::android_api->version.major >= 1 && godot::android_api->version.minor > 1,
+    ALOG_ASSERT(godot::android_api->version.major >= 1 && godot::android_api->version.minor >= 2,
                 "GDNative Android API version should be >= 1.2");
 }
 

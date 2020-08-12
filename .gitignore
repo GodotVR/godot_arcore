@@ -11,6 +11,7 @@
 *.class
 
 # Generated files
+.DS_Store
 bin/
 gen/
 out/

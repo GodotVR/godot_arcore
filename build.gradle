@@ -20,7 +20,20 @@ allprojects {
     }
 }
 
+def outputDir = "build/outputs"
+
 task clean(type: Delete) {
     dependsOn(":ARCore:clean")
     delete rootProject.buildDir
+    delete outputDir
+}
+
+/**
+ * Generate the plugin binaries.
+ */
+task generatePluginBinary(type: Copy) {
+    dependsOn(":ARCore:assembleDebug")
+    dependsOn(":ARCore:assembleRelease")
+    from("plugin/build/outputs/aar")
+    into("$outputDir/pluginBin")
 }
