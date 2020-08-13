@@ -21,4 +21,6 @@ void GDN_EXPORT godot_arcore_gdnative_terminate(godot_gdnative_terminate_options
 };
 #endif
 
+extern const godot_arvr_interface_gdnative arvr_interface_struct;
+
 #endif // GODOT_ARCORE_H
