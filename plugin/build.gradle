@@ -16,14 +16,14 @@ configurations { natives }
 android {
     buildToolsVersion = versions.buildTools
     compileSdkVersion versions.compileSdk
-    ndkVersion "21.1.6352462"
+    ndkVersion versions.ndkVersion
 
     defaultConfig {
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
         versionCode pluginVersionCode
         versionName pluginVersionName
-        setProperty("archivesBaseName", "gdarcore.$pluginVersionName")
+        setProperty("archivesBaseName", "gdarcore.${versionName}")
 
         externalNativeBuild {
             cmake {
@@ -35,7 +35,7 @@ android {
         }
 
         ndk {
-            abiFilters "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
+            abiFilters "arm64-v8a" // , "armeabi-v7a", "x86", "x86_64"
         }
     }
 
@@ -54,10 +54,29 @@ android {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlinVersion")
     implementation "androidx.legacy:legacy-support-v4:1.0.0"
-    implementation 'com.google.ar:core:1.18.0'
-    natives 'com.google.ar:core:1.18.0'
+    implementation("com.google.ar:core:$versions.arcoreVersion")
+    natives("com.google.ar:core:$versions.arcoreVersion")
     compileOnly fileTree(dir: 'libs', include: ['godot-lib*.aar'])
 }
+
+/*
+// When using the aar binary only, the *.gdns and *gdnlib files need to be in the same location
+// relative to the `assets` directory, so we recreate the relative directories and copy them prior
+// to building the aar binary.
+final relativeAddonsConfigDir = "addons/godot_arcore/config/"
+final sourceDir = "../demo/$relativeAddonsConfigDir"
+final targetDir = "src/main/assets/$relativeAddonsConfigDir"
+
+task copyAddonsConfig(type: Copy) {
+    doFirst {
+        delete(targetDir)
+    }
+    from sourceDir
+    into targetDir
+}
+
+preBuild.dependsOn(copyAddonsConfig)
+*/
 
 // Extracts the shared libraries from aars in the natives configuration.
 // This is done so that NDK builds can access these libraries.

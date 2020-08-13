@@ -9,17 +9,19 @@ func _add_log(text):
 func _ready():
 	var result = $ARCore.initialize()
 	if result != "Ok":
+		print(result)
 		_add_log(result)
 	else:
+		print("Successfully initialised ARCore")
 		_add_log("Successfully initialised ARCore")
 
 func _process(delta):
 	angle += delta
-	$Box.transform.basis = Basis(Vector3(1.0, 1.0, 1.0).normalized(), angle)	
-	
+	$Box.transform.basis = Basis(Vector3(1.0, 1.0, 1.0).normalized(), angle)
+
 	var info_text = "FPS: " + str(Engine.get_frames_per_second()) + "\n"
 	info_text += $ARCore.get_tracking_status() + "\n"
-	
+
 	$Info.text = info_text
 
 func _on_Button_pressed():
