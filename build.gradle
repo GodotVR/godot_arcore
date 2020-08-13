@@ -20,7 +20,8 @@ allprojects {
     }
 }
 
-def outputDir = "build/outputs"
+def outputDir = "plugin/build/outputs"
+def demoDir = "demo"
 
 task clean(type: Delete) {
     dependsOn(":ARCore:clean")
@@ -34,6 +35,12 @@ task clean(type: Delete) {
 task generatePluginBinary(type: Copy) {
     dependsOn(":ARCore:assembleDebug")
     dependsOn(":ARCore:assembleRelease")
+
+    // put a copy in our output folder
     from("plugin/build/outputs/aar")
     into("$outputDir/pluginBin")
+
+    // put a copy in our demo folder
+    from("plugin/build/outputs/aar")
+    into("$demoDir/android/plugins")
 }

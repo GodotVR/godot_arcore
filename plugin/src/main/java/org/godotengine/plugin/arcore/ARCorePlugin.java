@@ -1,5 +1,7 @@
 package org.godotengine.plugin.arcore;
 
+import java.util.*;
+
 import android.app.Activity;
 import android.view.View;
 
@@ -9,6 +11,9 @@ import org.godotengine.godot.Godot;
 import org.godotengine.godot.plugin.GodotPlugin;
 
 public class ARCorePlugin extends GodotPlugin {
+	static {
+		System.loadLibrary("godot_arcore");
+	}
 
 	public ARCorePlugin(Godot godot) {
 		super(godot);
@@ -27,5 +32,11 @@ public class ARCorePlugin extends GodotPlugin {
 	@Override
 	public String getPluginName() {
 		return "ARCorePlugin";
+	}
+
+	@NonNull
+	@Override
+	public Set<String> getPluginGDNativeLibrariesPaths() {
+		return Set.of("addons/godot_arcore/godot_arcore.gdnlib");
 	}
 }
