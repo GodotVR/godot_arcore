@@ -314,7 +314,8 @@ void ARCoreInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_tar
 	godot_rect2 screen_rect;
 	godot::api->godot_rect2_new(&screen_rect, p_screen_rect.position.x, p_screen_rect.position.y, p_screen_rect.size.width, p_screen_rect.size.height);
 
-	godot::arvr_api->godot_arvr_blit(p_eye, &p_render_target._godot_rid, &screen_rect);
+	godot_rid render_target_rid = p_render_target._get_godot_rid();
+	godot::arvr_api->godot_arvr_blit(p_eye, &render_target_rid, &screen_rect);
 }
 
 // Positions of the quad vertices in clip space (X, Y).
@@ -382,7 +383,8 @@ void ARCoreInterface::process() {
 		// Also this is a YCbCr texture, not RGB, should probably add a format for that some day :)
 		feed->_set_external(width, height);
 		RID camera_texture = feed->get_texture(CameraServer::FEED_RGBA_IMAGE);
-		camera_texture_id = godot::arvr_api->godot_arvr_get_texid(&camera_texture._godot_rid);
+		godot_rid camera_texture_rid = camera_texture._get_godot_rid();
+		camera_texture_id = godot::arvr_api->godot_arvr_get_texid(&camera_texture_rid);
 
 		Godot::print("Godot ARCore: Created: " + String::num_int64(camera_texture_id));
 	}
