@@ -56,7 +56,8 @@ set_target_properties(arcore PROPERTIES IMPORTED_LOCATION
 # Location to the Godot headers directory.
 set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/libs/godot-cpp")
 # TODO: Revert to the headers directory in the godot-cpp once it's updated with the latest from the 3.2 ARCore branch.
-set(GODOT_HEADERS_DIR "${CMAKE_SOURCE_DIR}/../../../godot/modules/gdnative/include")
+# set(GODOT_HEADERS_DIR "${CMAKE_SOURCE_DIR}/../../../godot/modules/gdnative/include")
+set(GODOT_HEADERS_DIR "${CMAKE_SOURCE_DIR}/libs/godot-cpp/godot_headers")
 
 set(GODOT_COMPILE_FLAGS)
 set(GODOT_LINKER_FLAGS)

@@ -34,7 +34,7 @@
 #include <map>
 
 #include "Godot.hpp"
-#include "ARVRInterface.hpp"
+#include "ARVRInterfaceGDNative.hpp"
 #include "ARVRPositionalTracker.hpp"
 #include "CameraFeed.hpp"
 #include "CameraMatrix.hpp"
@@ -50,97 +50,95 @@ namespace {
 using namespace godot;
 }
 
-class ARCoreInterface : public ARVRInterface {
-GODOT_CLASS(ARCoreInterface, ARVRInterface)
+class ARCoreInterface : public ARVRInterfaceGDNative {
+GODOT_CLASS(ARCoreInterface, ARVRInterfaceGDNative)
 
 public:
-    enum InitStatus {
-        NOT_INITIALISED, // We're not initialised
-        START_INITIALISE, // We just started our initialise process
-        INITIALISED, // Yeah! we are up and running
-        INITIALISE_FAILED // We failed to initialise
-    };
+	enum InitStatus {
+		NOT_INITIALISED, // We're not initialised
+		START_INITIALISE, // We just started our initialise process
+		INITIALISED, // Yeah! we are up and running
+		INITIALISE_FAILED // We failed to initialise
+	};
 
-    static ARCoreInterface *get_singleton_instance();
+	static ARCoreInterface *get_singleton_instance();
+	static void delete_singleton_instance();
 
-    static void delete_singleton_instance();
+	static void _register_methods();
 
-    static void _register_methods();
+	ARCoreInterface();
+	~ARCoreInterface();
 
-    ARCoreInterface();
+	virtual ARVRInterface::Tracking_status get_tracking_status() const;
 
-    ~ARCoreInterface();
+	void _resume();
 
-    virtual ARVRInterface::Tracking_status get_tracking_status() const;
+	void _pause();
 
-    void _resume();
+	virtual String get_name() const;
 
-    void _pause();
+	virtual int get_capabilities() const;
 
-    virtual String get_name() const;
+	virtual int get_camera_feed_id();
 
-    virtual int get_capabilities() const;
+	virtual bool is_initialized() const;
 
-    virtual int get_camera_feed_id();
+	virtual bool initialize();
 
-    virtual bool is_initialized() const;
+	virtual void uninitialize();
 
-    virtual bool initialize();
+	virtual Size2 get_render_targetsize();
 
-    virtual void uninitialize();
+	virtual bool is_stereo();
 
-    virtual Size2 get_render_targetsize();
+	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye,
+											const Transform &p_cam_transform);
 
-    virtual bool is_stereo();
+	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye,
+												real_t p_aspect,
+												real_t p_z_near,
+												real_t p_z_far);
 
-    virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye,
-                                            const Transform &p_cam_transform);
+	virtual void commit_for_eye(ARVRInterface::Eyes p_eye,
+								RID p_render_target,
+								const Rect2 &p_screen_rect);
 
-    virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye,
-                                                real_t p_aspect,
-                                                real_t p_z_near,
-                                                real_t p_z_far);
+	virtual void process();
 
-    virtual void commit_for_eye(ARVRInterface::Eyes p_eye,
-                                RID p_render_target,
-                                const Rect2 &p_screen_rect);
-
-    virtual void process();
-
-    virtual void notification(int p_what);
+	virtual void notification(int p_what);
 
 private:
-    static ARCoreInterface *singleton_instance;
+	static ARCoreInterface *singleton_instance;
 
-    InitStatus init_status;
+	InitStatus init_status;
 
-    ArSession *ar_session;
-    ArFrame *ar_frame;
-    int width;
-    int height;
-    int display_rotation;
-    uint camera_texture_id;
-    uint last_anchor_id;
+	ArSession *ar_session;
+	ArFrame *ar_frame;
+	int width;
+	int height;
+	int display_rotation;
+	uint camera_texture_id;
+	uint last_anchor_id;
 
-    Ref<CameraFeed> feed;
+	Ref<CameraFeed> feed;
 
-    Transform view;
-    CameraMatrix projection;
-    float z_near, z_far;
-    bool have_display_transform;
+	Transform view;
+	CameraMatrix projection;
+	float z_near, z_far;
+	bool have_display_transform;
 
-    struct anchor_map {
-        ARVRPositionalTracker *tracker;
-        bool stale;
-    };
+	struct anchor_map {
+		ARVRPositionalTracker *tracker;
+		bool stale;
+	};
 
-    Tracking_status tracking_state;
+	Tracking_status tracking_state;
 
-    std::map<ArPlane *, anchor_map *> anchors;
+	std::map<ArPlane *, anchor_map *> anchors;
 
-    void make_anchors_stale();
+	void make_anchors_stale();
 
-    void remove_stale_anchors();
+	void remove_stale_anchors();
 };
 
 #endif /* !ARCORE_INTERFACE_H */
