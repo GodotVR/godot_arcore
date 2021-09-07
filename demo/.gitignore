@@ -1,0 +1,5 @@
+# ignore our import cache
+.import
+
+# ignore the export templates folder
+android
