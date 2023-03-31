@@ -3,6 +3,10 @@
 
     <uses-permission android:name="android.permission.CAMERA"/>
 
+    <queries>
+        <package android:name="com.google.ar.core" />
+    </queries>
+    
     <uses-feature
         android:name="android.hardware.camera.ar"
         android:required="true" />
