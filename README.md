@@ -39,7 +39,7 @@ You can read into it in the [Contribution Guide](https://docs.godotengine.org/en
 
 ## Setup
 
-There is a separate readme in the branch [improve_instructions](https://github.com/LucaJunge/godot_arcore/blob/improve_instructions/SETUP.md) that tries to combine the setup instructions from multiple commits and branches into one document. Check it out.
+There is a separate setup readme available at [SETUP.md](./SETUP.md) that tries to combine the setup instructions from multiple commits and branches into one document. Check it out.
 
 Clone the repository and **initialise the submodules** with `git submodule update --init --recursive`.
 
