@@ -127,13 +127,19 @@ You are now ready to build and test the demo on your device.
 
 - You can open the resulting apk after a sucessful build in Android Studio to debug with the available tools there and connect with source code / debug symbols:
 
-### Paths for easier access
+### Debug symbol paths for easier access
 
 Not working and still throws me into a decompiled view.
 
 **libgodot_android.so:**
 
 - `godot/platform/android/java/lib/libs/dev/arm64-v8a/libgodot_android.so`
+
+**libc++_shared.so:**
+
+- `godot/platform/android/java/lib/libs/dev/arm64-v8a/libc++_shared.so`
+- Still some warnings: "One or more debug symbols point to paths not found on this machine. Please map those paths to local ones."
+- Seems to be related to LLVM, clang (and ndk)
 
 **libgodot_arcore.so:**
 
