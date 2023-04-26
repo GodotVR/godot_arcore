@@ -5,4 +5,4 @@ binary_type="local"
 binary="gdarcore.1.0.0-debug.aar"
 
 [dependencies]
-remote=["com.google.ar:core:1.18.0"]
+remote=["com.google.ar:core:1.29.0"]

@@ -14,7 +14,6 @@ import org.godotengine.godot.Godot;
  * Activity used to setup ARCore prior to initializing the Godot engine.
  */
 public class ARCoreSetupActivity extends Activity {
-
 	static final String PREVIOUS_ACTIVITY_START_INTENT_KEY = "previous_activity_start_intent";
 
 	private static boolean requestARCoreInstall = true;
