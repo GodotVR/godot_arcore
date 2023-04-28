@@ -4,7 +4,7 @@ This repository contains the source code for the Godot ARCore plugin.
 
 > **NOTE** This plugin currently does not yet work or pass CI.
 > This requires upstream changes to be merged in both Godot and Godot-cpp
-> and finishing toughes in this repository.
+> and finishing touches in this repository.
 > Help to get this over the finish line would be greatly appreciated.
 
 ## License
