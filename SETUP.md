@@ -50,9 +50,9 @@ You will clone two repositories, one for the engine and build templates and one 
 
 ### 2. Compiling the Plugin
 
-- Navigate back to your repositories folder and clone the ARCore plugin repository and the needed branch `make_this_work`
+- Navigate back to your repositories folder and clone the ARCore plugin repository
 
-  `git clone --branch make_this_work git@github.com:GodotVR/godot_arcore.git && cd godot_arcore`
+  `git clone git@github.com:GodotVR/godot_arcore.git && cd godot_arcore`
 
 - Change into the godot_arcore repository and initialise the needed c++ submodules for the plugin
 
@@ -147,4 +147,4 @@ Not working and still throws me into a decompiled view.
 
 ## Gotchas
 
-The NDK version in the make_this_work branches README says "21.1.6528147", but the `config.gradle` says "21.4.7075529"
+The NDK version in the master branches README says "21.1.6528147", but the `config.gradle` says "21.4.7075529"
