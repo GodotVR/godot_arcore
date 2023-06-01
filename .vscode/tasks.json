@@ -1,0 +1,35 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Generate godot-cpp classes",
+            "type": "shell",
+            "command": "python",
+            "group" : "build",
+            "args": [
+                "../../../generate.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/plugin/libs/godot-cpp",
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build godot plugin",
+            "type": "shell",
+            "windows": {
+                "command": "${workspaceFolder}/gradlew.bat",
+            },
+            "linux": {
+                "command": "${workspaceFolder}\gradlew",
+            },
+            "group" : "build",
+            "args": [
+                ":generatePluginBinary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+    ]
+}

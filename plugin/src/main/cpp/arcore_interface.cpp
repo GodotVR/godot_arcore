@@ -44,22 +44,28 @@
 #endif
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>, Robert Hofstra <robert.hofstra@knowlogy.nl>
+	@author Bastiaan Olij <mux213@gmail.com>, Robert Hofstra <robert.hofstra@knowlogy.nl>, Fredia Huya-Kouadio <fhuyakou@gmail.com>
 	ARCore interface between Android and Godot
 **/
 
-ARCoreInterface* ARCoreInterface::singleton_instance = nullptr;
+Ref<ARCoreInterface> ARCoreInterface::singleton_reference;
+ARCoreInterface *ARCoreInterface::singleton_instance = nullptr;
 
-ARCoreInterface* ARCoreInterface::get_singleton_instance() {
-  if (singleton_instance == nullptr) {
-    singleton_instance = new ARCoreInterface();
-  }
-  return singleton_instance;
+Ref<ARCoreInterface> ARCoreInterface::get_singleton_reference() {
+	if (singleton_reference.is_null()) {
+		singleton_reference.instance();
+	}
+	return singleton_reference;
 }
 
-void ARCoreInterface::delete_singleton_instance() {
-  delete singleton_instance;
-  singleton_instance = nullptr;
+ARCoreInterface * ARCoreInterface::get_singleton_instance() {
+	return singleton_instance;
+}
+
+void ARCoreInterface::delete_singleton_reference() {
+	if (singleton_reference.is_valid()) {
+		singleton_reference.unref();
+	}
 }
 
 String ARCoreInterface::get_name() const {
@@ -79,8 +85,9 @@ int ARCoreInterface::get_camera_feed_id() {
 }
 
 void ARCoreInterface::_register_methods() {
-  register_method("_resume", &ARCoreInterface::_resume);
-  register_method("_pause", &ARCoreInterface::_pause);
+	register_method("_init", &ARCoreInterface::_init);
+	register_method("_resume", &ARCoreInterface::_resume);
+	register_method("_pause", &ARCoreInterface::_pause);
 }
 
 bool ARCoreInterface::is_initialized() const {
@@ -89,7 +96,7 @@ bool ARCoreInterface::is_initialized() const {
 }
 
 ARVRInterface::Tracking_status ARCoreInterface::get_tracking_status() const {
-  return tracking_state;
+	return tracking_state;
 }
 
 void ARCoreInterface::_resume() {
@@ -165,7 +172,6 @@ bool ARCoreInterface::initialize() {
 		}
 
 		if (ar_session == nullptr) {
-
 			Godot::print("Godot ARCore: Getting environment");
 
 			// get some android things
@@ -349,7 +355,7 @@ void ARCoreInterface::remove_stale_anchors() {
 			delete am;
 			ArTrackable_release(ArAsTrackable(ar_plane));
 		} else {
-		  ++it;
+			++it;
 		}
 	}
 }
@@ -361,10 +367,13 @@ void ARCoreInterface::process() {
 	} else if ((ar_session == nullptr) or (feed.is_null())) {
 		// don't have a session yet so...
 		return;
+	} else if (android12_api == nullptr) {
+		// don't have access to this..
+		return;
 	}
 
 	// check display rotation
-	int new_display_rotation = godot::android_api->godot_android_get_display_rotation();
+	int new_display_rotation = android12_api->godot_android_get_display_rotation();
 	if (new_display_rotation != display_rotation) {
 		display_rotation = new_display_rotation;
 		if ((display_rotation == 1) || (display_rotation == 3)) {
@@ -452,6 +461,9 @@ void ARCoreInterface::process() {
 			ArTrackingFailureReason camera_tracking_failure_reason;
 			ArCamera_getTrackingFailureReason(ar_session, ar_camera, &camera_tracking_failure_reason);
 			switch (camera_tracking_failure_reason) {
+				case AR_TRACKING_FAILURE_REASON_NONE:
+					tracking_state = ARVRInterface::ARVR_UNKNOWN_TRACKING;
+					break;
 				case AR_TRACKING_FAILURE_REASON_BAD_STATE:
 					tracking_state = ARVRInterface::ARVR_INSUFFICIENT_FEATURES; // @TODO add bad state to ARVRInterface
 					break;
@@ -463,6 +475,9 @@ void ARCoreInterface::process() {
 					break;
 				case AR_TRACKING_FAILURE_REASON_INSUFFICIENT_FEATURES:
 					tracking_state = ARVRInterface::ARVR_INSUFFICIENT_FEATURES;
+					break;
+				case AR_TRACKING_FAILURE_REASON_CAMERA_UNAVAILABLE:
+					tracking_state = ARVRInterface::ARVR_INSUFFICIENT_FEATURES; // @TODO add no camera to ARVRInterface
 					break;
 				default:
 					tracking_state = ARVRInterface::ARVR_UNKNOWN_TRACKING;
@@ -636,6 +651,7 @@ void ARCoreInterface::process() {
 }
 
 ARCoreInterface::ARCoreInterface() {
+	singleton_instance = this;
 	ar_session = nullptr;
 	ar_frame = nullptr;
 	init_status = NOT_INITIALISED;
@@ -650,6 +666,11 @@ ARCoreInterface::ARCoreInterface() {
 	projection.set_perspective(60.0, 1.0, z_near, z_far, false); // this is just a default, will be changed by ARCore
 }
 
+void ARCoreInterface::_init() {
+	ERR_FAIL_NULL(arvr12_api);
+	arvr12_api->godot_arvr_set_interface(this->_owner, &arvr_interface_struct);
+}
+
 ARCoreInterface::~ARCoreInterface() {
 	// remove_all_anchors();
 
@@ -657,4 +678,6 @@ ARCoreInterface::~ARCoreInterface() {
 	if (is_initialized()) {
 		uninitialize();
 	}
+
+	singleton_instance = nullptr;
 }

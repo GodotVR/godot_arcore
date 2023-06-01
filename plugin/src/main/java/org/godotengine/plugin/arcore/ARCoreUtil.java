@@ -17,7 +17,6 @@ import org.godotengine.godot.xr.XRMode;
  * AR Core related utility methods.
  */
 public final class ARCoreUtil {
-
 	private static final int CAMERA_PERMISSION_CODE = 4324;
 	private static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
 

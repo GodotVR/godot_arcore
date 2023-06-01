@@ -2,6 +2,11 @@
 
 This repository contains the source code for the Godot ARCore plugin.
 
+> **NOTE** This plugin currently does not yet work or pass CI.
+> This requires upstream changes to be merged in both Godot and Godot-cpp
+> and finishing touches in this repository.
+> Help to get this over the finish line would be greatly appreciated.
+
 ## License
 
 - This project is released under the MIT license.
@@ -61,7 +66,6 @@ python ../../../generate.py
 ```
 
 **Note:**
-
 - While this plugin is in development, you'll need to check out the latest Godot 3.x version and cherry pick [PR #47455](https://github.com/godotengine/godot/pull/47455) and compile the runtime for Android and the editor for your desktop.
 - You need to copy the contents of your Godot build in the folder `modules\gdnative\include` into `plugin/libs/godot-cpp/godot-headers`
 - You need to generate an `api.json` file from the Godot Engine binary built from the Godot Engine ARCore branch and copy this into `plugin/libs/godot-cpp/godot-headers`. See [these instructions](https://github.com/godotengine/godot-cpp/tree/3.4#updating-the-apijson-file) for more details.
@@ -76,14 +80,14 @@ python ../../../generate.py
 
 ### Build
 
-### Generate plugin binary files
+#### Generate plugin binary files
 
 In the project root directory:
 
 - Run `./gradlew :generatePluginBinary` to generate the plugin binary files.
 - Once the build successfully completes, the binary files can be found in the `build/outputs/pluginBin` directory.
 
-## Deploy
+### Deploy
 
 Make sure in the Editor Settings screen the Android tab is setup correctly follownig the instructions on the [Export for Android](https://docs.godotengine.org/en/3.4/getting_started/workflow/export/exporting_for_android.html) help pages.
 You also need to configure the new `Custom Build Sdk Path` and point it to your Android Studio SDK folder.
