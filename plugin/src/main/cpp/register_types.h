@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  godot_arcore.h                                                       */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2023 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2023 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,31 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/**
-* Created by Fredia Huya-Kouadio.
-*/
+#ifndef ARCORE_REGISTER_TYPES_H
+#define ARCORE_REGISTER_TYPES_H
 
-#ifndef GODOT_ARCORE_H
-#define GODOT_ARCORE_H
+#include <godot_cpp/core/class_db.hpp>
 
-#include <gdnative_api_struct.gen.h>
+using namespace godot;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void initialize_arcore_module(ModuleInitializationLevel p_level);
+void uninitialize_arcore_module(ModuleInitializationLevel p_level);
 
-void GDN_EXPORT godot_arcore_gdnative_init(godot_gdnative_init_options *options);
-void GDN_EXPORT godot_arcore_gdnative_singleton();
-void GDN_EXPORT godot_arcore_nativescript_init(void *handle);
-void GDN_EXPORT godot_arcore_nativescript_terminate(void *handle);
-void GDN_EXPORT godot_arcore_gdnative_terminate(godot_gdnative_terminate_options *options);
-
-#ifdef __cplusplus
-};
-#endif
-
-extern const godot_arvr_interface_gdnative arvr_interface_struct;
-extern const godot_gdnative_ext_arvr_1_2_api_struct * arvr12_api;
-extern const godot_gdnative_ext_android_1_2_api_struct * android12_api;
-
-#endif // GODOT_ARCORE_H
+#endif // ARCORE_REGISTER_TYPES_H

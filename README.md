@@ -61,8 +61,7 @@ Checkout the [godot-cpp](https://github.com/GodotNativeTools/godot-cpp) repo as 
 The godot-cpp library is automatically compiled when we compile the plugin however you do first need to generate the binding classes. This can be done by running the following commands:
 
 ```
-cd plugin/libs/godot-cpp
-python ../../../generate.py
+python ./generate.py
 ```
 
 **Note:**

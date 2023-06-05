@@ -5,7 +5,8 @@ signal anchor_removed(anchor)
 
 export (PackedScene) var anchor_scene = null
 
-var arcore : ARVRInterface = null
+## TODO: We may want to move registering the interface into an autoload script like the XRInterfaceReference implementation
+var xr_interface : ARCoreInterface
 
 func tracker_added(tracker_name, tracker_type, tracker_id):
 	if tracker_type == ARVRServer.TRACKER_ANCHOR:
@@ -25,10 +26,10 @@ func tracker_removed(tracker_name, tracker_type, tracker_id):
 			anchor.queue_free()
 
 func get_tracking_status() -> String:
-	if !arcore:
+	if !xr_interface:
 		return "ARCore not initialized"
 	
-	var status = arcore.get_tracking_status() 
+	var status = xr_interface.get_tracking_status() 
 	if status == 4:
 		return "Not tracking, move your device around for ARCore to detect features"
 	elif status == 0:
@@ -46,17 +47,26 @@ func initialize() -> String:
 	ARVRServer.connect("tracker_added", self, "tracker_added")
 	ARVRServer.connect("tracker_removed", self, "tracker_removed")
 	
-	arcore = ARVRServer.find_interface('ARCore')
-	if !arcore:
-		return "Failed to start ARCore"
+	if !xr_interface:
+		return "Failed to find ARCore"
 	
-	if !arcore.initialize():
+	if !xr_interface.initialize():
 		return "Failed to start ARCore"
 	
 	# this just means we started our initialisation process successfully
 	get_viewport().arvr = true
 	
 	# assign our camera
-	$ARVRCamera.environment.background_camera_feed_id = arcore.get_camera_feed_id()
+	$XRCamera3D.environment.background_camera_feed_id = xr_interface.get_camera_feed_id()
 	
 	return "Ok"
+
+func _enter_tree():
+	xr_interface = ARCoreInterface.new()
+	if xr_interface:
+		XRServer.add_interface(xr_interface)
+
+func _exit_tree():
+	if xr_interface:
+		XRServer.remove_interface(xr_interface)
+		xr_interface = null

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2023 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2023 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,10 @@
 
 #include <map>
 
-#include "Godot.hpp"
-#include "gdnative/godot_arcore.h"
-#include "ARVRInterfaceGDNative.hpp"
-#include "ARVRPositionalTracker.hpp"
-#include "CameraFeed.hpp"
-#include "CameraMatrix.hpp"
+#include "godot_cpp/classes/xr_interface_extension.hpp"
+#include "godot_cpp/classes/xr_positional_tracker.hpp"
+#include "godot_cpp/classes/camera_feed.hpp"
+#include "godot_cpp/variant/projection.hpp"
 
 #include "include/arcore_c_api.h"
 
@@ -47,12 +45,10 @@
 	ARCore interface between Android and Godot
 **/
 
-namespace {
-using namespace godot;
-}
+namespace godot {
 
-class ARCoreInterface : public ARVRInterfaceGDNative {
-GODOT_CLASS(ARCoreInterface, ARVRInterfaceGDNative)
+class ARCoreInterface : public XRInterfaceExtension {
+	GDCLASS(ARCoreInterface, XRInterfaceExtension);
 
 public:
 	enum InitStatus {
@@ -62,60 +58,46 @@ public:
 		INITIALISE_FAILED // We failed to initialise
 	};
 
-	// We keep and instantiate our interface as a reference.
-	// In a few places we need access to the internal pointer before the reference is setup.
-	static Ref<ARCoreInterface> get_singleton_reference();
-	static ARCoreInterface * get_singleton_instance();
-	static void delete_singleton_reference();
-
-	static void _register_methods();
+	static void _bind_methods();
 
 	ARCoreInterface();
-	void _init();
 	virtual ~ARCoreInterface();
 
-	virtual ARVRInterface::Tracking_status get_tracking_status() const;
+	virtual XRInterface::TrackingStatus _get_tracking_status() const override;
 
 	void _resume();
 
 	void _pause();
 
-	virtual String get_name() const;
+	virtual StringName _get_name() const override;
 
-	virtual int get_capabilities() const;
+	virtual uint32_t _get_capabilities() const override;
 
-	virtual int get_camera_feed_id();
+	virtual int32_t _get_camera_feed_id() const override;
 
-	virtual bool is_initialized() const;
+	virtual bool _is_initialized() const override;
 
-	virtual bool initialize();
+	virtual bool _initialize() override;
 
-	virtual void uninitialize();
+	virtual void _uninitialize() override;
 
-	virtual Size2 get_render_targetsize();
+	virtual Vector2 _get_render_target_size() override;
 
-	virtual bool is_stereo();
+	virtual uint32_t _get_view_count() override;
 
-	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye,
-											const Transform &p_cam_transform);
+	virtual Transform3D _get_camera_transform() override;
 
-	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye,
-												real_t p_aspect,
-												real_t p_z_near,
-												real_t p_z_far);
+	virtual Transform3D _get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 
-	virtual void commit_for_eye(ARVRInterface::Eyes p_eye,
-								RID p_render_target,
-								const Rect2 &p_screen_rect);
+	virtual PackedFloat64Array _get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 
-	virtual void process();
+	virtual void _post_draw_viewport(const RID &p_render_target, const Rect2 &p_screen_rect) override;
+
+	virtual void _process() override;
 
 	virtual void notification(int p_what);
 
 private:
-	static Ref<ARCoreInterface> singleton_reference;
-	static ARCoreInterface *singleton_instance;
-
 	InitStatus init_status;
 
 	ArSession *ar_session;
@@ -128,17 +110,18 @@ private:
 
 	Ref<CameraFeed> feed;
 
-	Transform view;
-	CameraMatrix projection;
+	Ref<XRPositionalTracker> head;
+	Transform3D view;
+	Projection projection;
 	float z_near, z_far;
 	bool have_display_transform;
 
 	struct anchor_map {
-		ARVRPositionalTracker *tracker;
+		Ref<XRPositionalTracker> tracker;
 		bool stale;
 	};
 
-	Tracking_status tracking_state;
+	TrackingStatus tracking_state;
 
 	std::map<ArPlane *, anchor_map *> anchors;
 
@@ -146,5 +129,7 @@ private:
 
 	void remove_stale_anchors();
 };
+
+} // namespace godot
 
 #endif /* !ARCORE_INTERFACE_H */
