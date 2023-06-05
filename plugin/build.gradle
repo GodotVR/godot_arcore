@@ -16,7 +16,7 @@ configurations { natives }
 android {
     buildToolsVersion = versions.buildTools
     compileSdkVersion versions.compileSdk
-    ndkVersion versions.ndkVersion
+    ndkVersion '23.2.8568313'
 
     defaultConfig {
         minSdkVersion versions.minSdk
@@ -27,7 +27,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                cppFlags "-std=c++11", "-Wall"
+                cppFlags "-std=c++17", "-Wall"
                 arguments "-DANDROID_STL=c++_static",
                     "-DARCORE_LIBPATH=${arcore_libpath}/jni",
                     "-DARCORE_INCLUDE=${project.rootDir}/plugin/src/main/cpp/include"

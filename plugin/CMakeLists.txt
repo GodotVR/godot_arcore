@@ -40,7 +40,7 @@ if (NOT CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "${ANDROID_NDK}/build/cmake/android.toolchain.cmake")
 endif (NOT CMAKE_TOOLCHAIN_FILE)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -55,7 +55,7 @@ set_target_properties(arcore PROPERTIES IMPORTED_LOCATION
 
 # Location to the Godot headers directory.
 set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/libs/godot-cpp")
-set(GODOT_HEADERS_DIR "${CMAKE_SOURCE_DIR}/libs/godot-cpp/godot-headers")
+set(GODOT_HEADERS_DIR "${CMAKE_SOURCE_DIR}/libs/godot-cpp/gdextension")
 
 set(GODOT_COMPILE_FLAGS)
 set(GODOT_LINKER_FLAGS)
@@ -87,8 +87,8 @@ endif (CMAKE_BUILD_TYPE MATCHES Debug)
 ## godot-cpp library
 set(GODOT-CPP "godot-cpp")
 
-file(GLOB_RECURSE GODOT_CPP_SOURCES ${GODOT_CPP_DIR}/src/*.c**)
-file(GLOB_RECURSE GODOT_CPP_HEADERS ${GODOT_CPP_DIR}/include/*.h**)
+file(GLOB_RECURSE GODOT_CPP_SOURCES ${GODOT_CPP_DIR}/src/*.c** ${GODOT_CPP_DIR}/gen/src/*.c**)
+file(GLOB_RECURSE GODOT_CPP_HEADERS ${GODOT_CPP_DIR}/include/*.h** ${GODOT_CPP_DIR}/gen/include/*.h**)
 
 add_library(${GODOT-CPP}
         STATIC
@@ -97,8 +97,14 @@ add_library(${GODOT-CPP}
 target_include_directories(${GODOT-CPP}
         PUBLIC
         ${GODOT_CPP_DIR}/include
+        ${GODOT_CPP_DIR}/include/classes
         ${GODOT_CPP_DIR}/include/core
-        ${GODOT_CPP_DIR}/include/gen
+        ${GODOT_CPP_DIR}/include/templates
+        ${GODOT_CPP_DIR}/include/variant
+        ${GODOT_CPP_DIR}/gen/include
+        ${GODOT_CPP_DIR}/gen/include/classes
+        ${GODOT_CPP_DIR}/gen/include/core
+        ${GODOT_CPP_DIR}/gen/include/variant
         )
 
 # Put godot headers as SYSTEM PUBLIC to exclude warnings from irrelevant headers
@@ -124,11 +130,22 @@ target_include_directories(${PROJECT_NAME}
         PRIVATE
         src/main/cpp
         ${GODOT_CPP_DIR}/src
+        ${GODOT_CPP_DIR}/src/classes
         ${GODOT_CPP_DIR}/src/core
-        ${GODOT_CPP_DIR}/src/gen
+        ${GODOT_CPP_DIR}/src/variant
+        ${GODOT_CPP_DIR}/gen/src
+        ${GODOT_CPP_DIR}/gen/src/classes
+        ${GODOT_CPP_DIR}/gen/src/variant
         ${GODOT_CPP_DIR}/include
+        ${GODOT_CPP_DIR}/include/classes
         ${GODOT_CPP_DIR}/include/core
-        ${GODOT_CPP_DIR}/include/gen)
+        ${GODOT_CPP_DIR}/include/templates
+        ${GODOT_CPP_DIR}/include/variant
+        ${GODOT_CPP_DIR}/gen/include
+        ${GODOT_CPP_DIR}/gen/include/classes
+        ${GODOT_CPP_DIR}/gen/include/core
+        ${GODOT_CPP_DIR}/gen/include/variant
+        )
 
 # Put Godot headers as SYSTEM PUBLIC to exclude warnings from irrelevant headers
 target_include_directories(${PROJECT_NAME}

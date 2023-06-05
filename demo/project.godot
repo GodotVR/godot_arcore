@@ -22,9 +22,7 @@ config/icon="res://icon.png"
 
 window/handheld/orientation="sensor"
 
-[gdnative]
-
-singletons=[  ]
+singletons=[]
 
 [rendering]
 

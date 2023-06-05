@@ -1,5 +1,5 @@
 # ignore our import cache
-.import
+.godot
 
 # ignore the export templates folder
 android

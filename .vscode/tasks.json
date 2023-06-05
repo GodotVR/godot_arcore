@@ -9,10 +9,10 @@
             "command": "python",
             "group" : "build",
             "args": [
-                "../../../generate.py"
+                "./generate.py"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/plugin/libs/godot-cpp",
+                "cwd": "${workspaceFolder}",
             },
             "problemMatcher": "$msCompile"
         },
