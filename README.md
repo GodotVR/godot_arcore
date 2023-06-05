@@ -2,6 +2,9 @@
 
 This repository contains the source code for the Godot ARCore plugin.
 
+> **IMPORTANT** This it the Godot 3.x branch of this plugin.
+> It is currently not under active development and is broken.
+
 > **NOTE** This plugin currently does not yet work or pass CI.
 > This requires upstream changes to be merged in both Godot and Godot-cpp
 > and finishing touches in this repository.
