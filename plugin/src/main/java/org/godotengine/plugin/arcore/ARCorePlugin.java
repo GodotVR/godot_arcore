@@ -36,7 +36,11 @@ public class ARCorePlugin extends GodotPlugin {
 
 	@NonNull
 	@Override
-	public Set<String> getPluginGDNativeLibrariesPaths() {
-		return Set.of("addons/godot_arcore/godot_arcore.gdnlib");
+	public Set<String> getPluginGDExtensionLibrariesPaths() {
+		return Set.of("addons/godot_arcore/godot_arcore.gdextension");
 	}
+
+	private native void initializeWrapper();
+
+    private native void uninitializeWrapper();
 }
