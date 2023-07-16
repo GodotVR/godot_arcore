@@ -1,0 +1,12 @@
+[configuration]
+
+entry_symbol=arcore_library_init
+compatibility_minimum = 4.1
+
+[libraries]
+
+android.release.arm64="res://addons/godot_arcore/lib/arm64-v8a/libgodot_arcore.so"
+
+[dependencies]
+
+Android.arm64-v8a=[ ]
