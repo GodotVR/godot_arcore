@@ -10,8 +10,8 @@
 #define JNI_CLASS_NAME ARCorePlugin
 
 extern "C" {
-    JNIEXPORT void JNICALL JNI_METHOD(initializeWrapper)(JNIEnv *env, jobject object) {
-        ARCorePluginWrapper::initialize_wrapper(env, object);
+    JNIEXPORT void JNICALL JNI_METHOD(initializeWrapper)(JNIEnv *env, jobject arcore_plugin, jobject activity, jobject godot_instance) {
+        ARCorePluginWrapper::initialize_wrapper(env, activity, godot_instance, arcore_plugin);
     }
 
     JNIEXPORT void JNICALL JNI_METHOD(uninitializeWrapper)(JNIEnv *env, jobject) {

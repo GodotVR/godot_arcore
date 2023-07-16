@@ -3,7 +3,7 @@
 
 #include <android/log.h>
 
-#define LOG_TAG "GodotOpenXRPlugin"
+#define LOG_TAG "ARCorePlugin"
 
 #define ALOG_ASSERT(_cond, ...) \
 	if (!(_cond))               \

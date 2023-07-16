@@ -40,7 +40,7 @@ public class ARCorePlugin extends GodotPlugin {
 		return Set.of("addons/godot_arcore/godot_arcore.gdextension");
 	}
 
-	private native void initializeWrapper();
+	private native void initializeWrapper(Activity activity, Godot godot_instance);
 
     private native void uninitializeWrapper();
 }
