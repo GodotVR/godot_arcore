@@ -1,0 +1,15 @@
+[configuration]
+
+entry_symbol = "plugin_library_init"
+compatibility_minimum = "4.2"
+android_aar_plugin = true
+
+[libraries]
+
+android.debug.arm64 = "res://addons/ARCorePlugin/bin/debug/arm64-v8a/libARCorePlugin.so"
+android.debug.x86 = "res://addons/ARCorePlugin/bin/debug/x86/libARCorePlugin.so"
+android.debug.x86_64 = "res://addons/ARCorePlugin/bin/debug/x86_64/libARCorePlugin.so"
+
+android.release.arm64 = "res://addons/ARCorePlugin/bin/release/arm64-v8a/libARCorePlugin.so"
+android.release.x86 = "res://addons/ARCorePlugin/bin/release/x86/libARCorePlugin.so"
+android.release.x86_64 = "res://addons/ARCorePlugin/bin/release/x86_64/libARCorePlugin.so"
