@@ -43,27 +43,15 @@ jobs:
       # for android, run generate bindings python script
       - name: Generate bindings (Android)
         run: |
-          cd $GITHUB_WORKSPACE/plugin/libs/godot-cpp
-          python ../../../generate.py
+          cd $GITHUB_WORKSPACE/godot-cpp
+          scons platform=android target=template_debug
+          scons platform=android target=template_release
         if: matrix.platform == 'android'
-
-      # then run gradlew to build aar
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
 
       - name: Run the build for godot_arcore
         run: |
           cd $GITHUB_WORKSPACE
-          ./gradlew :generatePluginBinary
-
-      # for android, copy aar
-      - name: Upload build files (artifacts)
-        uses: actions/upload-artifact@v2
-        with:
-          name: build-files-arcore
-          path: |
-            plugin/build/outputs/pluginBin/*.aar
-            plugin/gdarcore.gdap
+          ./gradlew :assemble
 
   # This job collects the build output and assembles the final asset (artifact)
   asset:
@@ -80,15 +68,15 @@ jobs:
           path: godot_arcore
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v2
-      - name: Copy files to destination
-        run: |
-          mkdir godot_arcore_plugin
-          mkdir godot_arcore_plugin/addons
-          mkdir godot_arcore_plugin/android
-          mkdir godot_arcore_plugin/android/plugins
-          cp -r godot_arcore/demo/addons/godot_arcore godot_arcore_plugin/addons
-          cp build-files-arcore/*.aar godot_arcore_plugin/android/plugins/
-          cp build-files-arcore/gdarcore.gdap godot_arcore_plugin/android/plugins/godot_openxr.gdap
+      #- name: Copy files to destination
+      #  run: |
+      #    mkdir godot_arcore_plugin
+      #    mkdir godot_arcore_plugin/addons
+      #    mkdir godot_arcore_plugin/android
+      #    mkdir godot_arcore_plugin/android/plugins
+      #    cp -r godot_arcore/demo/addons/godot_arcore godot_arcore_plugin/addons
+      #    cp build-files-arcore/*.aar godot_arcore_plugin/android/plugins/
+      #    cp build-files-arcore/gdarcore.gdap godot_arcore_plugin/android/plugins/godot_openxr.gdap
       - name: Calculate GIT short ref
         run: |
           cd godot_arcore
