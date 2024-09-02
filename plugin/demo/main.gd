@@ -28,7 +28,7 @@ func _on_start_ar_button_pressed():
 
 func get_tracking_state() -> String:
 	var status = ARCoreInterfaceInstance.get_tracking_status()
-	
+
 	if status == XRInterface.XR_NOT_TRACKING:
 		return "Not Tracking"
 	elif status == XRInterface.XR_NORMAL_TRACKING:

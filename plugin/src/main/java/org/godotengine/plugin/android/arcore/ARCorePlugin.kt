@@ -28,7 +28,6 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 class ARCorePlugin(godot: Godot): GodotPlugin(godot) {
-
     companion object {
         val TAG = ARCorePlugin::class.java.simpleName // TAG = "ARCorePlugin"
 

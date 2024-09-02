@@ -55,7 +55,6 @@ bool ARCoreInterface::_initialize() {
         m_init_status = START_INITIALISE;
 
         if (m_ar_session == nullptr) {
-
             // Get the android environment
             JNIEnv *env = ARCoreWrapper::get_env();
 
@@ -389,5 +388,4 @@ void ARCoreInterface::start() {
 }
 
 void ARCoreInterface::handleScreenOrientationChange() {
-
 }

@@ -2,11 +2,11 @@
 
 
 ## Usage
-**Note:** [Android Studio](https://developer.android.com/studio) is the recommended IDE for 
-developing Godot Android plugins. 
+**Note:** [Android Studio](https://developer.android.com/studio) is the recommended IDE for
+developing Godot Android plugins.
 You can install the latest version from https://developer.android.com/studio.
 
-Clone the repository to your local machine, run the following command in the project root 
+Clone the repository to your local machine, run the following command in the project root
 directory to initialize the `godot-cpp` submodule:
 ```
 git submodule update --init
@@ -52,7 +52,7 @@ You can use the included [Godot demo project](plugin/demo/project.godot) to test
 - Open the demo in Godot (4.2 or higher)
 - Navigate to `Project` -> `Project Settings...` -> `Plugins`, and ensure the plugin is enabled
 - Install the Godot Android build template by clicking on `Project` -> `Install Android Build Template...`
-- Open [`plugin/demo/main.gd`](plugin/demo/main.gd) and update the logic as needed to reference 
+- Open [`plugin/demo/main.gd`](plugin/demo/main.gd) and update the logic as needed to reference
   your plugin and its methods
 - Connect an Android device to your machine and run the demo on it
 
@@ -81,7 +81,7 @@ scons platform=android target=template_release arch=x86_32
 scons platform=android target=template_release arch=x86_64
 ```
 
-When exporting the Godot app with the plugin enabled, don't forget to add the architectures to your build.  
+When exporting the Godot app with the plugin enabled, don't forget to add the architectures to your build.
 Open your project in the Godot Engine, navigate to `Project` -> `Export...` click on your Android Preset and under "Architectures" enable both `x86` and `x86_64`
 
 #### Tips
@@ -118,13 +118,13 @@ func helloWorld():
 
 ##### Support using the gdextension functionality in the Godot Editor
 
-If planning to use the gdextension functionality in the Godot Editor, it is recommended that the 
-gdextension's native binaries are compiled not just for Android, but also for the OS onto which 
-developers / users intend to run the Godot Editor. Not doing so may prevent developers / 
+If planning to use the gdextension functionality in the Godot Editor, it is recommended that the
+gdextension's native binaries are compiled not just for Android, but also for the OS onto which
+developers / users intend to run the Godot Editor. Not doing so may prevent developers /
 users from writing code that accesses the plugin from within the Godot Editor.
 
-This may involve creating dummy plugins for the host OS just so the API is published to the 
-editor. You can use the [godot-cpp-template](https://github.com/godotengine/godot-cpp-template) 
+This may involve creating dummy plugins for the host OS just so the API is published to the
+editor. You can use the [godot-cpp-template](https://github.com/godotengine/godot-cpp-template)
 github template for reference on how to do so.
 
 ## Gotchas

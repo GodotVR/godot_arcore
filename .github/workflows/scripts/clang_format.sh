@@ -6,7 +6,7 @@
 set -uo pipefail
 IFS=$'\n\t'
 
-CLANG_FORMAT_FILE_EXTS=(".c" ".h" ".cpp" ".hpp" ".cc" ".hh" ".cxx" ".m" ".mm" ".inc" ".java" ".glsl")
+CLANG_FORMAT_FILE_EXTS=(".c" ".h" ".cpp" ".hpp" ".cc" ".hh" ".cxx" ".m" ".mm" ".inc" ".java" ".kt" ".glsl")
 
 # Loops through all text files tracked by Git.
 git grep -zIl '' |
