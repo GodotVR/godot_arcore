@@ -1,121 +1,140 @@
-# Godot ARCore Plugin
+# GDExtension ARCore Plugin
 
-This repository contains the source code for the Godot ARCore plugin.
 
-> **IMPORTANT** We are currently updating this plugin to work with Godot 4.x.
-> This is still a work in progress. This readme is outdated and will soon be
-> updated with new information!
+## Usage
+**Note:** [Android Studio](https://developer.android.com/studio) is the recommended IDE for
+developing Godot Android plugins.
+You can install the latest version from https://developer.android.com/studio.
 
-> **NOTE** This plugin currently does not yet work or pass CI.
-> This requires upstream changes to be merged in both Godot and Godot-cpp
-> and finishing touches in this repository.
-> Help to get this over the finish line would be greatly appreciated.
-
-## License
-
-- This project is released under the MIT license.
-- Note that the build process will download additional binaries that fall under Googles own licenses.
-
-## Requirements
-
-### Base Requirements
-
-- Git
-- Python 3.6+
-- OpenJDK 11 (`sudo apt install openjdk-11-jdk-headless`)
-- Add `ANDROID_SDK_ROOT` to your path
-- Scons (via `pip install SCons`)
-
-### Android Studio
-
-Download and install Android Studio Version 2021.1 or newer.
-
-After that, make sure you have the latest versions by [checking the SDK Manager for updates](https://developer.android.com/studio/intro/update.html#sdk-manager)
-
-Also install "NDK (Side By Side)" with the **EXACT version 21.4.7075529** and "Android SDK Command-line Tools (latest)"
-
-#### debug.keystore
-
-Android needs a debug keystore file to install to devices and distribute non-release APKs. For more information, see
-
-[https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_android.html#create-a-debug-keystore](https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_android.html#create-a-debug-keystore)
-
-### Godot Engine Build System
-
-For this plugin to work, you need to compile the Godot Engine.
-
-You can read into it in the [Contribution Guide](https://docs.godotengine.org/en/stable/development/compiling/getting_source.html) and / or use the [one-liners](https://docs.godotengine.org/en/stable/development/compiling/compiling_for_x11.html#distro-specific-one-liners) for Linux-based distros.
-
-## Setup
-
-There is a separate setup readme available at [SETUP.md](./SETUP.md) that tries to combine the setup instructions from multiple commits and branches into one document. Check it out.
-
-Clone the repository and **initialise the submodules** with `git submodule update --init --recursive`.
-
-- **Note**: When you've pulled a newer version make sure to run `git submodule update --init --recursive`.
-
-## Godot C++ library
-
-Checkout the [godot-cpp](https://github.com/GodotNativeTools/godot-cpp) repo as a submodule by running the following command: `git submodule update --init --recursive`.
-
-- The [godot-cpp](https://github.com/GodotNativeTools/godot-cpp) repo will checkout under the `plugin/libs/godot-cpp` directory.
-
-### Building the Godot C++ library
-
-The godot-cpp library is automatically compiled when we compile the plugin however you do first need to generate the binding classes. This can be done by running the following commands:
-
+Clone the repository to your local machine, run the following command in the project root
+directory to initialize the `godot-cpp` submodule:
 ```
-python ./generate.py
+git submodule update --init
 ```
 
-**Note:**
-- While this plugin is in development, you'll need to check out the latest Godot 3.x version and cherry pick [PR #47455](https://github.com/godotengine/godot/pull/47455) and compile the runtime for Android and the editor for your desktop.
-- You need to copy the contents of your Godot build in the folder `modules\gdnative\include` into `plugin/libs/godot-cpp/godot-headers`
-- You need to generate an `api.json` file from the Godot Engine binary built from the Godot Engine ARCore branch and copy this into `plugin/libs/godot-cpp/godot-headers`. See [these instructions](https://github.com/godotengine/godot-cpp/tree/3.4#updating-the-apijson-file) for more details.
-- You need to copy the build template created after [Compiling Godot for Android](https://docs.godotengine.org/en/3.4/development/compiling/compiling_for_android.html)
+### Building the C++ bindings
+Build the Android C++ bindings using the following commands. To speed up compilation, add `-jN` at
+the end of the SCons command line where `N` is the number of CPU threads you have on your system.
+The example below uses 4 threads.
+```
+cd godot-cpp
+scons platform=android target=template_debug -j4
+scons platform=android target=template_release -j4
+```
 
-## Android SDK & NDK
+When the command is completed, you should have static libraries stored in `godot-cpp/bin` that
+will be used for compilation by the plugin.
 
-- Download and setup [Android Studio version **4.0** or higher](https://developer.android.com/studio).
-  - After setup, ensure you have the latest versions by checking the [SDK Manager](https://developer.android.com/studio/intro/update.html#sdk-manager) for updates.
-- Set the environment variable `ANDROID_HOME` to the Android SDK location.
-- Follow the instructions [here](https://developer.android.com/studio/projects/install-ndk#specific-version) and install version **21.1.6528147** of the NDK.
+### Building the configured Android plugin
+- In a terminal window, navigate to the project's root directory and run the following command:
+```
+./gradlew assemble
+```
+- On successful completion of the build, the output files can be found in
+  [`plugin/demo/addons`](plugin/demo/addons)
 
-### Build
+### Building the configured Android plugin with Android Studio
+- Open Android Studio and Click on `Open...` navigate to the git repo and click on `godot_arcore_plugin` where the android robot shows up and wait for Android Studio to finish loading
 
-#### Generate plugin binary files
+- In the top bar click on `Add Configuration...` and then `Edit Configurations...`
 
-In the project root directory:
+- For the development you can create two configurations, one for building the project and one for cleaning the output folders:
 
-- Run `./gradlew :generatePluginBinary` to generate the plugin binary files.
-- Once the build successfully completes, the binary files can be found in the `build/outputs/pluginBin` directory.
+- Click on the `+` sign and choose "Gradle" as the type for the configuration
 
-### Deploy
+- In the window to the right give the configuration a name - *`build` in this case* - and under "Run" type `assemble`, which corresponds to the command `./gradlew assemble` which you would do in the command line
 
-Make sure in the Editor Settings screen the Android tab is setup correctly follownig the instructions on the [Export for Android](https://docs.godotengine.org/en/3.4/getting_started/workflow/export/exporting_for_android.html) help pages.
-You also need to configure the new `Custom Build Sdk Path` and point it to your Android Studio SDK folder.
+- You can repeat the steps for the gradle task `clean` if you want
 
-Your project needs to be setup with a [Godot Android custom build template](https://docs.godotengine.org/en/3.4/getting_started/workflow/export/android_custom_build.html).
+### Testing the Android plugin
+You can use the included [Godot demo project](plugin/demo/project.godot) to test the built Android plugin
 
-Copy the AAR files for this plugin created during the build phase into the `res://android/plugins` folder created when setting up the custom build templates.
-Also copy `plugin/gdarcore.gdap` into the `res://android/plugins` folder.
+- Open the demo in Godot (4.2 or higher)
+- Navigate to `Project` -> `Project Settings...` -> `Plugins`, and ensure the plugin is enabled
+- Install the Godot Android build template by clicking on `Project` -> `Install Android Build Template...`
+- Open [`plugin/demo/main.gd`](plugin/demo/main.gd) and update the logic as needed to reference
+  your plugin and its methods
+- Connect an Android device to your machine and run the demo on it
 
-When exporting the project apk in Godot, the following Android export options should be set:
+### Testing the Android Plugin with the Android Studio Device Emulator
 
-- `Xr Features`
-  - `Xr Mode` must be set to `AR Core`.
-- `Custom Template`
-  - `Use Custom Build` must be enabled.
-- 'Version'
-  - `Min Sdk` must be set to atleast 24.
-- `Plugins`
-  - `ARCore` must be listed and enabled in the `Plugins` section.
+Follow the installation in [Run AR Apps in Android Emulator](https://developers.google.com/ar/develop/java/emulator) and create a device
 
-## About this repository
+For the Android plugin and the resulting app to compile you have to add x86 ABIs to your setup. That means compiling godot-cpp for x86_32 and x86_64 and making some changes to the build.gradle.kts file of the plugin:
 
-This repository is mainly being maintained by:
+Add these lines to you `plugin/build.gradle.kts`:
+```gradle
+ndk {
+	abiFilters.add("arm64-v8a")
+	abiFilters.add("x86")
+	abiFilters.add("x86_64")
+}
+```
 
-- [Fredia Huya-Kouadio](https://github.com/m4gr3d)
-- [Bastiaan Olij](https://github.com/BastiaanOlij)
+To compile godot-cpp for the two architectures, navigate to the `godot-cpp` submodule and build it. See [Building the C++ bindings](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/gdextension_cpp_example.html#building-the-c-bindings) for details.
 
-See contributors file for other people involved in this plugin.
+```bash
+cd godot-cpp
+scons platform=android target=template_debug arch=x86_32
+scons platform=android target=template_debug arch=x86_64
+scons platform=android target=template_release arch=x86_32
+scons platform=android target=template_release arch=x86_64
+```
+
+When exporting the Godot app with the plugin enabled, don't forget to add the architectures to your build.
+Open your project in the Godot Engine, navigate to `Project` -> `Export...` click on your Android Preset and under "Architectures" enable both `x86` and `x86_64`
+
+#### Tips
+
+##### Simplify access to the exposed Java / Kotlin APIs
+
+To make it easier to access the exposed Java / Kotlin APIs in the Godot Editor, it's recommended to
+provide one (or multiple) gdscript wrapper class(es) for your plugin users to interface with.
+
+For example:
+
+```
+class_name PluginInterface extends Object
+
+## Interface used to access the functionality provided by this plugin
+
+var _plugin_name = "GDExtensionAndroidPluginTemplate"
+var _plugin_singleton
+
+func _init():
+	if Engine.has_singleton(_plugin_name):
+		_plugin_singleton = Engine.get_singleton(_plugin_name)
+	else:
+		printerr("Initialization error: unable to access the java logic")
+
+## Print a 'Hello World' message to the logcat.
+func helloWorld():
+	if _plugin_singleton:
+		_plugin_singleton.helloWorld()
+	else:
+		printerr("Initialization error")
+
+```
+
+##### Support using the gdextension functionality in the Godot Editor
+
+If planning to use the gdextension functionality in the Godot Editor, it is recommended that the
+gdextension's native binaries are compiled not just for Android, but also for the OS onto which
+developers / users intend to run the Godot Editor. Not doing so may prevent developers /
+users from writing code that accesses the plugin from within the Godot Editor.
+
+This may involve creating dummy plugins for the host OS just so the API is published to the
+editor. You can use the [godot-cpp-template](https://github.com/godotengine/godot-cpp-template)
+github template for reference on how to do so.
+
+## Gotchas
+
+Currently, the gradlew script has Windows-style line endings which stops the script from executing under Linux.
+
+To fix that, navigate to the folder where the `gradlew` script is and enter the following command:
+
+```sh
+dos2unix ./gradlew
+```
+
+This will convert the line endings to LF.

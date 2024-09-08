@@ -1,4 +1,0 @@
-rootProject.name = "Godot ARCore Plugin"
-
-include ":ARCore"
-project(":ARCore").projectDir = file("plugin")

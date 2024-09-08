@@ -1,135 +1,92 @@
-/*************************************************************************/
-/*  arcore_interface.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2023 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2023 Godot Engine contributors (cf. AUTHORS.md)    */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+//
+// Created by luca on 18.08.24.
+//
 
-#ifndef ARCORE_INTERFACE_H
-#define ARCORE_INTERFACE_H
-
-#include <map>
-
-#include "godot_cpp/classes/xr_interface_extension.hpp"
-#include "godot_cpp/classes/xr_positional_tracker.hpp"
-#include "godot_cpp/classes/camera_feed.hpp"
-#include "godot_cpp/variant/projection.hpp"
+#ifndef ARCOREPLUGIN_ARCORE_INTERFACE_H
+#define ARCOREPLUGIN_ARCORE_INTERFACE_H
 
 #include "include/arcore_c_api.h"
-
-/**
-	@author Bastiaan Olij <mux213@gmail.com>, Robert Hofstra <robert.hofstra@knowlogy.nl>
-	ARCore interface between Android and Godot
-**/
+#include <godot_cpp/classes/xr_interface_extension.hpp>
+#include <godot_cpp/classes/xr_positional_tracker.hpp>
 
 namespace godot {
+    class ARCoreInterface : public XRInterfaceExtension {
+        GDCLASS(ARCoreInterface, XRInterfaceExtension);
 
-class ARCoreInterface : public XRInterfaceExtension {
-	GDCLASS(ARCoreInterface, XRInterfaceExtension);
+    protected:
+        static void _bind_methods();
 
-public:
-	enum InitStatus {
-		NOT_INITIALISED, // We're not initialised
-		START_INITIALISE, // We just started our initialise process
-		INITIALISED, // Yeah! we are up and running
-		INITIALISE_FAILED // We failed to initialise
-	};
+    public:
+        enum InitStatus {
+            NOT_INITIALISED,
+            START_INITIALISE,
+            INITIALISED,
+            INITIALISE_FAILED
+        };
 
-	static void _bind_methods();
+        ARCoreInterface();
+        ~ARCoreInterface();
+        void _resume();
+        void _pause();
+        void start();
 
-	ARCoreInterface();
-	virtual ~ARCoreInterface();
+        // Method overrides from XRInterface
+        virtual XRInterface::TrackingStatus _get_tracking_status() const override;
 
-	virtual XRInterface::TrackingStatus _get_tracking_status() const override;
+        virtual StringName _get_name() const override;
 
-	void _resume();
+        virtual uint32_t _get_capabilities() const override;
 
-	void _pause();
+        virtual int32_t _get_camera_feed_id() const override;
 
-	virtual StringName _get_name() const override;
+        virtual bool _is_initialized() const override;
 
-	virtual uint32_t _get_capabilities() const override;
+        virtual bool _initialize() override;
 
-	virtual int32_t _get_camera_feed_id() const override;
+        virtual void _uninitialize() override;
 
-	virtual bool _is_initialized() const override;
+        virtual Vector2 _get_render_target_size() override;
 
-	virtual bool _initialize() override;
+        virtual uint32_t _get_view_count() override;
 
-	virtual void _uninitialize() override;
+        virtual Transform3D _get_camera_transform() override;
 
-	virtual Vector2 _get_render_target_size() override;
+        virtual Transform3D _get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 
-	virtual uint32_t _get_view_count() override;
+        virtual PackedFloat64Array _get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 
-	virtual Transform3D _get_camera_transform() override;
+        virtual void _post_draw_viewport(const RID &p_render_target, const Rect2 &p_screen_rect) override;
 
-	virtual Transform3D _get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
+        virtual void _process() override;
 
-	virtual PackedFloat64Array _get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+    private:
+        enum class Orientation: int32_t {
+            UNKNOWN = -1, // Not initialized
+            ROTATION_0 = 0, // Portrait mode
+            ROTATION_90 = 1, // Counter-clockwise rotation of 90 degrees
+            ROTATION_180 = 2, // Upside down
+            ROTATION_270 = 3 // Counter-clockwise rotation of 270 degrees
+        };
 
-	virtual void _post_draw_viewport(const RID &p_render_target, const Rect2 &p_screen_rect) override;
+        InitStatus m_init_status;
+        ArSession *m_ar_session;
+        ArFrame *m_ar_frame;
+        int m_screen_width;
+        int m_screen_height;
+        Orientation m_display_orientation;
 
-	virtual void _process() override;
+        Ref<XRPositionalTracker> m_head;
+        Transform3D m_view;
+        Projection m_projection;
+        float m_z_near;
+        float m_z_far;
 
-	virtual void notification(int p_what);
+        TrackingStatus m_tracking_status;
 
-private:
-	InitStatus init_status;
+        void configureSession();
 
-	ArSession *ar_session;
-	ArFrame *ar_frame;
-	int width;
-	int height;
-	int display_rotation;
-	uint camera_texture_id;
-	uint last_anchor_id;
-
-	Ref<CameraFeed> feed;
-
-	Ref<XRPositionalTracker> head;
-	Transform3D view;
-	Projection projection;
-	float z_near, z_far;
-	bool have_display_transform;
-
-	struct anchor_map {
-		Ref<XRPositionalTracker> tracker;
-		bool stale;
-	};
-
-	TrackingStatus tracking_state;
-
-	std::map<ArPlane *, anchor_map *> anchors;
-
-	void make_anchors_stale();
-
-	void remove_stale_anchors();
+        void handleScreenOrientationChange();
+    };
 };
 
-} // namespace godot
-
-#endif /* !ARCORE_INTERFACE_H */
+#endif //ARCOREPLUGIN_ARCORE_INTERFACE_H

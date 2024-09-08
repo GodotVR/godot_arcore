@@ -1,13 +1,24 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.22.1)
 
+## Default configs
 # Default android abi is arm64-v8a
 if (NOT ANDROID_ABI)
     set(ANDROID_ABI "arm64-v8a")
 endif (NOT ANDROID_ABI)
 
-# Default android platform is android-24
+if (ANDROID_ABI STREQUAL "armeabi-v7a")
+    set(GODOT_CPP_LIB_ABI "arm32")
+elseif (ANDROID_ABI STREQUAL "x86")
+    set(GODOT_CPP_LIB_ABI "x86_32")
+elseif (ANDROID_ABI STREQUAL "x86_64")
+    set(GODOT_CPP_LIB_ABI "x86_64")
+else ()
+    set(GODOT_CPP_LIB_ABI "arm64")
+endif ()
+
+# Default android platform is android-21
 if (NOT ANDROID_PLATFORM)
-    set(ANDROID_PLATFORM "android-24")
+    set(ANDROID_PLATFORM "android-21")
 endif (NOT ANDROID_PLATFORM)
 
 # Default build type is Debug
@@ -17,8 +28,10 @@ endif (NOT CMAKE_BUILD_TYPE)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-D_DEBUG)
+    set(GODOT_CPP_LIB_BUILD_TYPE debug)
 else ()
     add_definitions(-DNDEBUG)
+    set(GODOT_CPP_LIB_BUILD_TYPE release)
 endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
 if (NOT (ANDROID_STL STREQUAL "c++_shared"))
@@ -40,22 +53,19 @@ if (NOT CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "${ANDROID_NDK}/build/cmake/android.toolchain.cmake")
 endif (NOT CMAKE_TOOLCHAIN_FILE)
 
+if (NOT DEFINED BITS)
+    set(BITS 32)
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(BITS 64)
+    endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
+endif (NOT DEFINED BITS)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-project(godot_arcore VERSION 1.0.0)
-
-# Import the ARCore library.
-add_library(arcore SHARED IMPORTED)
-set_target_properties(arcore PROPERTIES IMPORTED_LOCATION
-              ${ARCORE_LIBPATH}/${ANDROID_ABI}/libarcore_sdk_c.so
-              INTERFACE_INCLUDE_DIRECTORIES ${ARCORE_INCLUDE}
-)
-
-# Location to the Godot headers directory.
-set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/libs/godot-cpp")
-set(GODOT_HEADERS_DIR "${CMAKE_SOURCE_DIR}/libs/godot-cpp/gdextension")
+# TODO: Update cmake project's name.
+project(ARCorePlugin LANGUAGES CXX)
 
 set(GODOT_COMPILE_FLAGS)
 set(GODOT_LINKER_FLAGS)
@@ -72,7 +82,6 @@ set(GODOT_COMPILE_FLAGS "${GODOT_COMPILE_FLAGS} -Wredundant-decls -Wreturn-type 
 set(GODOT_COMPILE_FLAGS "${GODOT_COMPILE_FLAGS} -Wswitch -Wswitch-enum -Wtrigraphs")
 set(GODOT_COMPILE_FLAGS "${GODOT_COMPILE_FLAGS} -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunused-label")
 set(GODOT_COMPILE_FLAGS "${GODOT_COMPILE_FLAGS} -Wunused-value -Wvariadic-macros -Wvolatile-register-var -Wno-error=attributes")
-set(GODOT_COMPILE_FLAGS "${GODOT_COMPILE_FLAGS} -fno-omit-frame-pointer -O0")
 
 if (NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(GODOT_COMPILE_FLAGS "${GODOT_COMPILE_FLAGS} -Wno-ignored-attributes")
@@ -85,85 +94,60 @@ else ()
 endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
 ## godot-cpp library
+set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/../godot-cpp")
 set(GODOT-CPP "godot-cpp")
 
-file(GLOB_RECURSE GODOT_CPP_SOURCES ${GODOT_CPP_DIR}/src/*.c** ${GODOT_CPP_DIR}/gen/src/*.c**)
-file(GLOB_RECURSE GODOT_CPP_HEADERS ${GODOT_CPP_DIR}/include/*.h** ${GODOT_CPP_DIR}/gen/include/*.h**)
+# Use the godot-cpp prebuilt static binary
+set(GODOT_CPP_STATIC_LIB "${GODOT_CPP_DIR}/bin/libgodot-cpp.android.template_${GODOT_CPP_LIB_BUILD_TYPE}.${GODOT_CPP_LIB_ABI}.a")
+
+list(APPEND GODOT_CPP_INCLUDE_DIRECTORIES "${GODOT_CPP_DIR}/include")
+list(APPEND GODOT_CPP_INCLUDE_DIRECTORIES "${GODOT_CPP_DIR}/gen/include")
+list(APPEND GODOT_CPP_INCLUDE_DIRECTORIES "${GODOT_CPP_DIR}/gdextension")
 
 add_library(${GODOT-CPP}
         STATIC
-        ${GODOT_CPP_SOURCES} ${GODOT_CPP_HEADERS})
-
-target_include_directories(${GODOT-CPP}
-        PUBLIC
-        ${GODOT_CPP_DIR}/include
-        ${GODOT_CPP_DIR}/include/classes
-        ${GODOT_CPP_DIR}/include/core
-        ${GODOT_CPP_DIR}/include/templates
-        ${GODOT_CPP_DIR}/include/variant
-        ${GODOT_CPP_DIR}/gen/include
-        ${GODOT_CPP_DIR}/gen/include/classes
-        ${GODOT_CPP_DIR}/gen/include/core
-        ${GODOT_CPP_DIR}/gen/include/variant
+        IMPORTED GLOBAL
+        INTERFACE_INCLUDE_DIRECTORIES "${GODOT_CPP_INCLUDE_DIRECTORIES}"
         )
+set_target_properties(${GODOT-CPP} PROPERTIES IMPORTED_LOCATION ${GODOT_CPP_STATIC_LIB})
 
-# Put godot headers as SYSTEM PUBLIC to exclude warnings from irrelevant headers
-target_include_directories(${GODOT-CPP}
-        SYSTEM PUBLIC
-        ${GODOT_HEADERS_DIR}
-        )
-
-# Add the compile flags
-set_property(TARGET ${GODOT-CPP} APPEND_STRING PROPERTY COMPILE_FLAGS ${GODOT_COMPILE_FLAGS})
-set_property(TARGET ${GODOT-CPP} APPEND_STRING PROPERTY LINK_FLAGS ${GODOT_LINKER_FLAGS})
 
 ## Setup the plugin library
-# Get sources
-file(GLOB_RECURSE SOURCES src/main/cpp/*.c**)
-file(GLOB_RECURSE HEADERS src/main/cpp/*.h**)
+file(GLOB_RECURSE ANDROID_SOURCES "${CMAKE_SOURCE_DIR}/src/main/cpp/*.c**")
+file(GLOB_RECURSE ANDROID_HEADERS "${CMAKE_SOURCE_DIR}/src/main/cpp/*.h**")
 
-add_library(${PROJECT_NAME}
-        SHARED
-        ${SOURCES} ${HEADERS})
+add_library(${CMAKE_PROJECT_NAME} SHARED
+        ${ANDROID_SOURCES} ${ANDROID_HEADERS}
+)
 
-target_include_directories(${PROJECT_NAME}
-        PRIVATE
-        src/main/cpp
-        ${GODOT_CPP_DIR}/src
-        ${GODOT_CPP_DIR}/src/classes
-        ${GODOT_CPP_DIR}/src/core
-        ${GODOT_CPP_DIR}/src/variant
-        ${GODOT_CPP_DIR}/gen/src
-        ${GODOT_CPP_DIR}/gen/src/classes
-        ${GODOT_CPP_DIR}/gen/src/variant
-        ${GODOT_CPP_DIR}/include
-        ${GODOT_CPP_DIR}/include/classes
-        ${GODOT_CPP_DIR}/include/core
-        ${GODOT_CPP_DIR}/include/templates
-        ${GODOT_CPP_DIR}/include/variant
-        ${GODOT_CPP_DIR}/gen/include
-        ${GODOT_CPP_DIR}/gen/include/classes
-        ${GODOT_CPP_DIR}/gen/include/core
-        ${GODOT_CPP_DIR}/gen/include/variant
-        )
+# Specify path to ARCore's native libraries in the build folder
+set(ARCORE_LIB_DIR "${CMAKE_SOURCE_DIR}/build/arcore-native/jni/arm64-v8a")
 
-# Put Godot headers as SYSTEM PUBLIC to exclude warnings from irrelevant headers
-target_include_directories(${PROJECT_NAME}
+# Include ARCore
+add_library(arcore_sdk_c SHARED IMPORTED)
+set_target_properties(arcore_sdk_c PROPERTIES IMPORTED_LOCATION "${ARCORE_LIB_DIR}/libarcore_sdk_c.so")
+
+add_library(arcore_sdk_jni SHARED IMPORTED)
+set_target_properties(arcore_sdk_jni PROPERTIES IMPORTED_LOCATION "${ARCORE_LIB_DIR}/libarcore_sdk_jni.so")
+
+target_include_directories(${CMAKE_PROJECT_NAME}
         SYSTEM PUBLIC
-        ${GODOT_HEADERS_DIR})
+        ${GODOT_CPP_INCLUDE_DIRECTORIES}
+)
 
-target_link_libraries(${PROJECT_NAME}
-                      android
-                      log
-                      GLESv2
-                      arcore
-                      ${GODOT-CPP})
+# Specifies libraries CMake should link to your target library. You
+# can link libraries from various origins, such as libraries defined in this
+# build script, prebuilt third-party libraries, or Android system libraries.
+target_link_libraries(${CMAKE_PROJECT_NAME}
+        # List libraries link to the target library
+        android
+        # Add the ARCore dependencies here
+        arcore_sdk_c
+        arcore_sdk_jni
+        log
+        ${GODOT-CPP}
+        )
 
 # Add the compile flags
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS ${GODOT_COMPILE_FLAGS})
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS ${GODOT_LINKER_FLAGS})
-
-set(BITS 32)
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(BITS 64)
-endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
