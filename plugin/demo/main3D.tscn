@@ -1,0 +1,76 @@
+[gd_scene load_steps=13 format=3 uid="uid://b0n6vtr0gl6l3"]
+
+[ext_resource type="Script" path="res://MeshInstance3D.gd" id="1_0ufg4"]
+[ext_resource type="Script" path="res://main3D.gd" id="1_a4ilg"]
+[ext_resource type="PackedScene" uid="uid://cglxfqvt03e63" path="res://ui.tscn" id="3_rflmv"]
+[ext_resource type="PackedScene" uid="uid://cb26lopdx85mb" path="res://ruler.blend" id="4_qfgab"]
+
+[sub_resource type="Environment" id="Environment_p5o4h"]
+background_mode = 5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uqmg6"]
+albedo_color = Color(0.839216, 0.458824, 0.811765, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_erelu"]
+size = Vector3(0.2, 0.2, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_46dqb"]
+albedo_color = Color(0, 1, 0, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hb0ns"]
+metallic = 0.44
+metallic_specular = 0.64
+
+[sub_resource type="PrismMesh" id="PrismMesh_tcft2"]
+material = SubResource("StandardMaterial3D_hb0ns")
+size = Vector3(0.2, 0.2, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u614n"]
+albedo_color = Color(0, 0, 1, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_kr2qi"]
+material = SubResource("StandardMaterial3D_u614n")
+size = Vector3(0.2, 0.2, 0.2)
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_a4ilg")
+
+[node name="Origin3D" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="Origin3D"]
+environment = SubResource("Environment_p5o4h")
+far = 10.23
+
+[node name="Pink" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.295, -0.995)
+material_override = SubResource("StandardMaterial3D_uqmg6")
+mesh = SubResource("PrismMesh_erelu")
+script = ExtResource("1_0ufg4")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7839, 0.442961, 0.43507, -0.589591, 0.750733, 0.297964, -0.194635, -0.490087, 0.849666, -0.0265236, 1.21704, -0.0687435)
+
+[node name="Green" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, -2.001)
+material_override = SubResource("StandardMaterial3D_46dqb")
+mesh = SubResource("PrismMesh_tcft2")
+
+[node name="Blue" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.529, -3)
+mesh = SubResource("PrismMesh_kr2qi")
+
+[node name="Node2D" parent="." instance=ExtResource("3_rflmv")]
+
+[node name="ruler" parent="." instance=ExtResource("4_qfgab")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, -0.575, -1)
+
+[connection signal="estimate_depthmap_toggled" from="Node2D" to="." method="_on_node_2d_estimate_depthmap_toggled"]
+[connection signal="far_changed" from="Node2D" to="." method="_on_node_2d_far_changed"]
+[connection signal="horizontal_planes_toggled" from="Node2D" to="." method="_on_node_2d_horizontal_planes_toggled"]
+[connection signal="images_detection_toggled" from="Node2D" to="." method="_on_node_2d_images_detection_toggled"]
+[connection signal="instant_placement_toggled" from="Node2D" to="." method="_on_node_2d_instant_placement_toggled"]
+[connection signal="light_estimation_toggled" from="Node2D" to="." method="_on_node_2d_light_estimation_toggled"]
+[connection signal="point_cloud_detection_toggled" from="Node2D" to="." method="_on_node_2d_point_cloud_detection_toggled"]
+[connection signal="show_depthmap_toggled" from="Node2D" to="." method="_on_node_2d_show_depthmap_toggled"]
+[connection signal="switch_orientation" from="Node2D" to="." method="_on_node_2d_switch_orientation"]
+[connection signal="vertical_planes_toggled" from="Node2D" to="." method="_on_node_2d_vertical_planes_toggled"]

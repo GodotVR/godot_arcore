@@ -10,24 +10,19 @@ config_version=5
 
 [application]
 
-config/name="GDExtension Android Plugin Demo"
-run/main_scene="res://main.tscn"
-config/features=PackedStringArray("4.2", "GL Compatibility")
-config/icon="res://icon.svg"
+config/name="Godot_ARCore_example"
+run/main_scene="res://main3D.tscn"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+config/icon="res://Godot_ARCoreExample.png"
 
 [autoload]
 
 ARCoreInterfaceInstance="*res://addons/ARCorePlugin/ARCoreInterface.gd"
 
-[debug]
-
-settings/stdout/verbose_stdout=true
-
 [display]
 
-window/size/viewport_width=1800
-window/size/viewport_height=2400
-window/handheld/orientation=1
+window/size/mode=3
+window/size/resizable=false
 
 [editor_plugins]
 
@@ -41,4 +36,5 @@ textures/vram_compression/import_etc2_astc=true
 
 [xr]
 
+openxr/form_factor=1
 shaders/enabled=true

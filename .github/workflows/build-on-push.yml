@@ -53,8 +53,8 @@ jobs:
     - name: Create libgodot-cpp Android templates
       run: |
         cd $GITHUB_WORKSPACE/repo/godot-cpp
-        scons platform=android target=template_debug arch=arm64
-        scons platform=android target=template_release arch=arm64
+        scons platform=android target=template_debug arch=arm64 custom_api_file=../thirdparty/godot_cpp_extension_api/extension_api.json
+        scons platform=android target=template_release arch=arm64 custom_api_file=../thirdparty/godot_cpp_extension_api/extension_api.json
         cd $GITHUB_WORKSPACE
     
     - name: Assemble the plugin
