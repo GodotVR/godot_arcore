@@ -6,7 +6,7 @@ This repository contains the source code for the Godot ARCore plugin.
 > This is still a work in progress.
 
 > **NOTE** This plugin currently does not yet work or pass CI.
-> This requires upstream changes to be merged in both Godot and Godot-cpp
+> This requires upstream changes to be merged in both Godot and godot-cpp
 > and finishing touches in this repository.
 > Help to get this over the finish line would be greatly appreciated.
 
@@ -76,14 +76,14 @@ will be used for compilation by the plugin.
 ### Testing the Android plugin
 You can use the included [Godot demo project](plugin/demo/project.godot) to test the built Android plugin
 
-- Open the demo in Godot (4.2 or higher)
+- Open the demo in Godot (4.4 or higher)
 - Navigate to `Project` -> `Project Settings...` -> `Plugins`, and ensure the plugin is enabled
 - Install the Godot Android build template by clicking on `Project` -> `Install Android Build Template...`
 - Open [`plugin/demo/main.gd`](plugin/demo/main.gd) and update the logic as needed to reference
   your plugin and its methods
 - Connect an Android device to your machine and run the demo on it
 
-### Testing the Android Plugin with the Android Studio Device Emulator
+### Testing the Android Plugin with the Android Studio Device Emulator (experimental)
 
 Follow the installation in [Run AR Apps in Android Emulator](https://developers.google.com/ar/develop/java/emulator) and create a device
 
