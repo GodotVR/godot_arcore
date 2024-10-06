@@ -1,132 +1,19 @@
-[gd_scene load_steps=10 format=3 uid="uid://cg3hylang5fxn"]
+[gd_scene load_steps=2 format=3 uid="uid://cg3hylang5fxn"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_j0gfq"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rr52s"]
-bg_color = Color(0.2655, 0.317775, 0.45, 1)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.206182, 0.248662, 0.360116, 1)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x8ygb"]
-albedo_color = Color(0, 0, 1, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_wukjl"]
-material = SubResource("StandardMaterial3D_x8ygb")
-size = Vector3(0.4, 0.4, 0.4)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trvgj"]
-albedo_color = Color(1, 0, 0, 1)
-
-[sub_resource type="SphereMesh" id="SphereMesh_yvi2r"]
-material = SubResource("StandardMaterial3D_trvgj")
-radius = 0.05
-height = 0.1
-
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lvyi5"]
-sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
-ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
-
-[sub_resource type="Sky" id="Sky_vwrey"]
-sky_material = SubResource("ProceduralSkyMaterial_lvyi5")
-
-[sub_resource type="Environment" id="Environment_603g6"]
-background_mode = 2
-sky = SubResource("Sky_vwrey")
-tonemap_mode = 2
-
-[node name="Main" type="Node3D"]
+[node name="Main" type="Node2D"]
 script = ExtResource("1_j0gfq")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-
-[node name="Control" type="Control" parent="CanvasLayer"]
-layout_mode = 3
-anchors_preset = 15
+[node name="Button" type="Button" parent="."]
+anchors_preset = 14
+anchor_top = 0.5
 anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchor_bottom = 0.5
+offset_left = 40.0
+offset_top = 250.0
+offset_right = 320.0
+offset_bottom = 312.0
+text = "Hello GDExtension World"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="MarginContainer2" type="MarginContainer" parent="CanvasLayer/Control/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 50
-theme_override_constants/margin_top = 100
-theme_override_constants/margin_right = 50
-theme_override_constants/margin_bottom = 50
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/MarginContainer2"]
-layout_mode = 2
-
-[node name="CameraPositionLabel" type="Label" parent="CanvasLayer/Control/VBoxContainer/MarginContainer2/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 30
-text = "XRCamera.position: [0, 0, 0]"
-
-[node name="TrackingState" type="Label" parent="CanvasLayer/Control/VBoxContainer/MarginContainer2/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 30
-text = "Tracking State: Not tracking"
-
-[node name="Spacer" type="Control" parent="CanvasLayer/Control/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Control/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 60
-theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 60
-theme_override_constants/margin_bottom = 120
-
-[node name="StartARButton" type="Button" parent="CanvasLayer/Control/VBoxContainer/MarginContainer"]
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 2
-theme_override_font_sizes/font_size = 60
-theme_override_styles/normal = SubResource("StyleBoxFlat_rr52s")
-text = "Start AR"
-
-[node name="XROrigin3D" type="XROrigin3D" parent="."]
-current = true
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="XROrigin3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
-mesh = SubResource("BoxMesh_wukjl")
-
-[node name="Origin" type="MeshInstance3D" parent="XROrigin3D"]
-mesh = SubResource("SphereMesh_yvi2r")
-
-[node name="Label3D" type="Label3D" parent="XROrigin3D/Origin"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.190765, 0)
-pixel_size = 0.0005
-text = "Origin
-↓"
-font_size = 120
-outline_size = 30
-
-[node name="XRCamera3D" type="XRCamera3D" parent="XROrigin3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.476125)
-fov = 60.0
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_603g6")
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
-shadow_enabled = true
-
-[connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/MarginContainer/StartARButton" to="." method="_on_start_ar_button_pressed"]
+[connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
