@@ -1,0 +1,193 @@
+[gd_scene load_steps=2 format=3 uid="uid://cglxfqvt03e63"]
+
+[ext_resource type="Script" path="res://ui.gd" id="1_gq1yt"]
+
+[node name="Node2D" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_gq1yt")
+
+[node name="Scale" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 45.0
+offset_top = 18.0
+offset_right = 85.0
+offset_bottom = 58.0
+scale = Vector2(2.62683, 2.62683)
+
+[node name="FarSlider" type="HSlider" parent="Scale"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 14.0
+offset_right = 208.0
+offset_bottom = 30.0
+min_value = 1.0
+value = 1.0
+
+[node name="FarLabel" type="Label" parent="Scale"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = 60.0
+offset_bottom = 63.0
+text = "Far:"
+
+[node name="FarValue" type="Label" parent="Scale"]
+layout_mode = 0
+offset_left = 64.0
+offset_top = 38.0
+offset_right = 104.0
+offset_bottom = 61.0
+text = "val"
+
+[node name="EstimateDepthmap" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 157.0
+offset_top = 88.0
+offset_right = 201.0
+offset_bottom = 112.0
+
+[node name="EstimateDistance" type="Label" parent="Scale/EstimateDepthmap"]
+layout_mode = 0
+offset_left = -146.0
+offset_top = -2.0
+offset_right = -9.0
+offset_bottom = 21.0
+text = "Estimate distance
+"
+
+[node name="SchowDepthmap" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 162.0
+offset_top = 135.0
+offset_right = 206.0
+offset_bottom = 159.0
+
+[node name="ShowDepthmap" type="Label" parent="Scale/SchowDepthmap"]
+layout_mode = 0
+offset_left = -150.0
+offset_top = -3.0
+offset_right = -13.0
+offset_bottom = 20.0
+text = "Show depthmap
+"
+
+[node name="VerticalPlaneDetection" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 199.334
+offset_top = 180.962
+offset_right = 243.334
+offset_bottom = 204.962
+
+[node name="ShowVerticalPlanes" type="Label" parent="Scale/VerticalPlaneDetection"]
+layout_mode = 0
+offset_left = -190.098
+offset_top = -0.415653
+offset_right = -6.0984
+offset_bottom = 22.5843
+text = "Vertical plane detection
+"
+
+[node name="HorizontaPlanelDetection" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 214.031
+offset_top = 221.839
+offset_right = 258.031
+offset_bottom = 245.839
+
+[node name="ShowHorizontalPlanes" type="Label" parent="Scale/HorizontaPlanelDetection"]
+layout_mode = 0
+offset_left = -205.764
+offset_top = -0.459286
+offset_right = 0.235825
+offset_bottom = 22.5407
+text = "Horizontal plane detection
+"
+
+[node name="InstantPlacement" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 198.875
+offset_top = 259.502
+offset_right = 242.875
+offset_bottom = 283.502
+
+[node name="UseInstantPlacement" type="Label" parent="Scale/InstantPlacement"]
+layout_mode = 0
+offset_left = -190.098
+offset_top = -0.415653
+offset_right = -6.0984
+offset_bottom = 22.5843
+text = "Use instant placement
+"
+
+[node name="LightEstimation" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 125.847
+offset_top = 300.379
+offset_right = 169.847
+offset_bottom = 324.379
+
+[node name="EstimateLight" type="Label" parent="Scale/LightEstimation"]
+layout_mode = 0
+offset_left = -118.957
+offset_right = 0.0425568
+offset_bottom = 31.0
+text = "Estimate light"
+
+[node name="ImagesDetection" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 197.497
+offset_top = 337.123
+offset_right = 241.497
+offset_bottom = 361.123
+
+[node name="UseImagesDetection" type="Label" parent="Scale/ImagesDetection"]
+layout_mode = 0
+offset_left = -191.067
+offset_top = -2.2964
+offset_right = -7.06673
+offset_bottom = 46.7036
+text = "Use images detection
+
+"
+
+[node name="PointCloudDetecton" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 197.038
+offset_top = 371.11
+offset_right = 241.038
+offset_bottom = 395.11
+
+[node name="UsePointCloudDetection" type="Label" parent="Scale/PointCloudDetecton"]
+layout_mode = 0
+offset_left = -191.067
+offset_top = -2.2964
+offset_right = -7.06673
+offset_bottom = 46.7036
+text = "Point cloud detection"
+
+[node name="VerticalDisplay" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 480.808
+offset_top = 15.2275
+offset_right = 524.808
+offset_bottom = 39.2275
+
+[node name="UseVerticalDisplay" type="Label" parent="Scale/VerticalDisplay"]
+layout_mode = 0
+offset_left = -191.067
+offset_top = -2.2964
+offset_right = -7.06673
+offset_bottom = 46.7036
+text = "Switch to vertical"
+
+[connection signal="value_changed" from="Scale/FarSlider" to="." method="_on_far_slider_value_changed"]
+[connection signal="toggled" from="Scale/EstimateDepthmap" to="." method="_on_estimate_depthmap_toggled"]
+[connection signal="toggled" from="Scale/SchowDepthmap" to="." method="_on_schow_depthmap_toggled"]
+[connection signal="toggled" from="Scale/VerticalPlaneDetection" to="." method="_on_vertical_plane_detection_toggled"]
+[connection signal="toggled" from="Scale/HorizontaPlanelDetection" to="." method="_on_horizontal_plane_detection_toggled"]
+[connection signal="toggled" from="Scale/InstantPlacement" to="." method="_on_instant_placement_toggled"]
+[connection signal="toggled" from="Scale/LightEstimation" to="." method="_on_light_estimation_toggled"]
+[connection signal="toggled" from="Scale/ImagesDetection" to="." method="_on_images_detection_toggled"]
+[connection signal="toggled" from="Scale/PointCloudDetecton" to="." method="_on_point_cloud_detection_toggled"]
+[connection signal="toggled" from="Scale/VerticalDisplay" to="." method="_on_vertical_display_toggled"]

@@ -1,14 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Limits app visibility in the Google Play Store to ARCore supported devices
+        (https://developers.google.com/ar/devices). -->
     <uses-feature android:name="android.hardware.camera.ar" />
 
     <queries>
         <package android:name="com.google.ar.core" />
+        <package android:name="com.android.vending" />
+
+        <intent>
+            <action android:name="com.google.android.play.core.install.BIND_INSTALL_SERVICE" />
+        </intent>
     </queries>
 
-    <application>
+    <application
+        tools:node="merge">
+
         <!--
         Plugin metadata:
 
@@ -20,11 +32,29 @@
         - The `android:value` attribute should be the classpath to the plugin
         initializer.
         -->
+        <!-- "AR Required" app, requires "Google Play Services for AR" (ARCore)
+         to be installed, as the app does not include any non-AR features. -->
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="required"
+            tools:replace="android:value"/>
+
+        <!-- The minimal version code of ARCore APK required for an app using this SDK. -->
+        <!--<meta-data
+            android:name="com.google.ar.core.min_apk_version"
+            android:value="220920000" />-->
+
         <meta-data
             android:name="org.godotengine.plugin.v2.${godotPluginName}"
             android:value="${godotPluginPackageName}.ARCorePlugin"/>
 
-        <meta-data android:name="com.google.ar.core" android:value="required" />
+        <activity
+            android:name="com.google.ar.core.InstallActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.Material.Light.Dialog.Alert" />
     </application>
 
 </manifest>
