@@ -12,12 +12,26 @@ directory to initialize the `godot-cpp` submodule:
 git submodule update --init
 ```
 
+### Prerequisites
+
+- OpenJDK: NEEDS version 17
+- Gradle: 8.9 (NEEDS pre 9.0)
+- Make sure the ANDROID_HOME env var is set (usually /home/<username>/Android/Sdk). NOTE: don't use tilde path ("~/Android/Sdk") as it may fail the python `os.path.exists` call
+- Make sure that $ANDROID_HOME/platform-tools is in your PATH variable (and that platform tools are installed in Android Studio)
+- Make sure that the NDKROOT env var is set (should be $ANDROID_HOME/ndk/<version>)
+- Use Ndk versions 25.1.8937393 (in your path above), and also download version 23.2.8568313
+
+You are now ready to build the bindings :)
+
+
+
 ### Building the C++ bindings
 Build the Android C++ bindings using the following commands. To speed up compilation, add `-jN` at
 the end of the SCons command line where `N` is the number of CPU threads you have on your system.
 The example below uses 4 threads.
 ```
 cd godot-cpp
+git checkout 4.4
 scons platform=android target=template_debug -j4
 scons platform=android target=template_release -j4
 ```
