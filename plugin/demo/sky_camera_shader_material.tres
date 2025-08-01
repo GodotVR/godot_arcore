@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bx5fypg8vpbdc"]
+
+[ext_resource type="Shader" uid="uid://5biwnyv657o7" path="res://Camera.gdshader" id="1_w7xvg"]
+
+[resource]
+shader = ExtResource("1_w7xvg")
+shader_parameter/viewport_size = Vector2(512, 512)
+shader_parameter/feed_transform_basis_x = Vector2(1, 0)
+shader_parameter/feed_transform_basis_y = Vector2(0, 1)
+shader_parameter/feed_transform_origin = Vector2(0, 0)

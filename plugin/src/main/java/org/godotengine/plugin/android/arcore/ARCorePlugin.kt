@@ -38,6 +38,7 @@ class ARCorePlugin(godot: Godot): GodotPlugin(godot) {
         var cameraPermissionGranted : Boolean = false
 
         var session : Session? = null
+        private var m_activity: Activity? = null
         private var surfaceView: GLSurfaceView? = null
         private var hasSetTextureNames: Boolean = false
         private var cameraTextureId: Int = -1
@@ -58,6 +59,7 @@ class ARCorePlugin(godot: Godot): GodotPlugin(godot) {
 
     override fun onMainCreate(activity: Activity): View? {
         super.onMainCreate(activity)
+        m_activity = activity
         Log.d(TAG, "onMainCreate()")
 
         // 1. Check if ARCore is available and/or can be installed
@@ -85,8 +87,8 @@ class ARCorePlugin(godot: Godot): GodotPlugin(godot) {
 
         // These are placeholders needed to get ARCore to report hit tests
         // Will be removed later
-        surfaceView = GLSurfaceView(activity)
-        surfaceView!!.setRenderer(GodotRenderer())
+        //surfaceView = GLSurfaceView(activity)
+        //surfaceView!!.setRenderer(GodotRenderer())
 
         return null
     }
@@ -163,7 +165,10 @@ class ARCorePlugin(godot: Godot): GodotPlugin(godot) {
             // Note that the order of pausing matters - GLSurfaceView is paused first so that it does not try
             // to query the session. If Session is paused before GLSurfaceView, GLSurfaceView may
             // still call session.update() and get a SessionPausedException.
-            surfaceView!!.onPause()
+            
+            
+            //surfaceView!!.onPause()
+            
             session!!.pause()
         }
     }
@@ -224,69 +229,74 @@ class ARCorePlugin(godot: Godot): GodotPlugin(godot) {
         gl.glBindTexture(GL10.GL_TEXTURE_2D, cameraTextureId)
     }
 
-    fun updateSessionIfNeeded(session: Session) {
-        if (viewportChanged) {
-            //val displayRotation: Int = display.rotation
-            // hardcoded values for the display width and height here for now...
-            session.setDisplayGeometry(0, 1080, 2400)
-            viewportChanged = false
-        }
-    }
+
 
     override fun onGLDrawFrame(gl: GL10?) {
-        //Log.d(TAG,"onGLDrawFrame")
+        Log.d(TAG,"onGLDrawFrame")
 
         // Do we call the super up here or later?
         super.onGLDrawFrame(gl)
 
+        if (viewportChanged){
+            var rotation: Int = m_activity!!.getWindowManager().getDefaultDisplay().getRotation();
+            
+            onDisplayGeometryChanged(rotation, viewportWidth, viewportHeight);
+            //session!!.setDisplayGeometry(rotation, viewportWidth, viewportHeight);
+            viewportChanged = false
+        }
+
         if(session == null) {
+            Log.d(TAG, "ArSession is null on jvm side")
             return
         }
 
-        updateSessionIfNeeded(session!!)
+        //updateSessionIfNeeded(session!!)
 
         if (!hasSetTextureNames) {
             session!!.setCameraTextureNames(intArrayOf(cameraTextureId))
             hasSetTextureNames = true;
         }
 
-        var frame: Frame
-        var trackables: Collection<Plane>
+        
 
-        try {
-            var displayRotation: Int = 0 //display.rotation
-            session!!.setDisplayGeometry(displayRotation, viewportWidth, viewportHeight)
-
-            frame = session!!.update()
-
-            trackables = frame.getUpdatedTrackables(Plane::class.java)
-            var resultString = ""
-            if (trackables.isNotEmpty()) {
-                trackables.forEach() { trackable ->
-                    resultString += "$trackable, "
-                }
-                Log.d(TAG, resultString)
-            }
-
-            var hitResultList: List<HitResult>  = frame.hitTest(100.0F, 100.0F)
-
-            if(hitResultList.isNotEmpty()) {
-                var nearestHit = hitResultList[0]
-
-                var distanceToCamera: Float = nearestHit.distance
-                var pose: Pose = nearestHit.hitPose
-                Log.d(TAG, "Distance from camera to hit: $distanceToCamera")
-                Log.d(TAG, "Pose of the hit: $pose")
-            }
-
-        } catch(e: CameraNotAvailableException) {
-            Log.e(TAG, "ARCorePlugin: Camera was not available during onGLDrawFrame", e)
-        } catch(e: TextureNotSetException) {
-            Log.d(TAG, "ARCorePlugin: The texture was not set")
-        }
+        //var frame: Frame
+        //var trackables: Collection<Plane>
+        //
+        //try {
+        //    var displayRotation: Int = 0 //display.rotation
+        //    session!!.setDisplayGeometry(displayRotation, viewportWidth, viewportHeight)
+        //
+        //    frame = session!!.update()
+        //
+        //    trackables = frame.getUpdatedTrackables(Plane::class.java)
+        //    var resultString = ""
+        //    if (trackables.isNotEmpty()) {
+        //        trackables.forEach() { trackable ->
+        //            resultString += "$trackable, "
+        //        }
+        //        Log.d(TAG, "Trackables: " + resultString)
+        //    }
+        //
+        //    var hitResultList: List<HitResult>  = frame.hitTest(100.0F, 100.0F)
+        //
+        //    if(hitResultList.isNotEmpty()) {
+        //        var nearestHit = hitResultList[0]
+        //
+        //        var distanceToCamera: Float = nearestHit.distance
+        //        var pose: Pose = nearestHit.hitPose
+        //        Log.d(TAG, "Distance from camera to hit: $distanceToCamera")
+        //        Log.d(TAG, "Pose of the hit: $pose")
+        //    }
+        //
+        //} catch(e: CameraNotAvailableException) {
+        //    Log.e(TAG, "ARCorePlugin: Camera was not available during onGLDrawFrame", e)
+        //} catch(e: TextureNotSetException) {
+        //    Log.d(TAG, "ARCorePlugin: The texture was not set")
+        //}
     }
 
     fun onSurfaceChanged(width: Int, height: Int) {
+        Log.d(TAG, "Surface changed")
         viewportWidth = width
         viewportHeight = height
         viewportChanged = true
@@ -301,4 +311,8 @@ class ARCorePlugin(godot: Godot): GodotPlugin(godot) {
 
     @UsedByGodot
     private external fun uninitializeEnvironment()
+
+    // No @UsedByGodot this function should be called from this class into cpp
+    // I guess, I learnt some JNI 15 mins ago that's it
+    external fun onDisplayGeometryChanged(orientation: Int, width: Int, height: Int);
 }

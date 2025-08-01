@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://brxoo1l3oentm"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ciji2"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_s7emf"]
+material = SubResource("StandardMaterial3D_ciji2")
+size = Vector3(0.1, 0.01, 0.1)
+
+[node name="TrackedPlane" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_s7emf")

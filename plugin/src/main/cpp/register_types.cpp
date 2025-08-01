@@ -36,7 +36,7 @@ GDExtensionBool GDE_EXPORT plugin_library_init(GDExtensionInterfaceGetProcAddres
 		GDExtensionInitialization
 				*r_initialization) {
 	godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
-
+					
 	init_obj.register_initializer(initialize_plugin_module);
 	init_obj.register_terminator(uninitialize_plugin_module);
 

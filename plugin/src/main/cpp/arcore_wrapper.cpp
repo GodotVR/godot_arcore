@@ -13,6 +13,11 @@ jobject ARCoreWrapper::activity = nullptr;
 jclass ARCoreWrapper::godot_class = nullptr;
 jclass ARCoreWrapper::activity_class = nullptr;
 
+int ARCoreWrapper::display_orientation = 0; // Orientation::ROTATION_0
+int ARCoreWrapper::display_width = 1080;
+int ARCoreWrapper::display_height = 1920;
+bool ARCoreWrapper::viewport_changed = false;
+
 ARCoreWrapper::ARCoreWrapper() {}
 
 ARCoreWrapper::~ARCoreWrapper() {}
@@ -77,3 +82,20 @@ jobject ARCoreWrapper::get_global_context() {
 	jobject context = env->CallObjectMethod(activityThreadObj, getApplication);
 	return context;
 }
+
+
+void ARCoreWrapper::on_display_geometry_changed(int orientation, int width, int height){
+	ALOGV("Godot ARCore: ARCoreWrapper was notified of display geometry change: %d %dx%d", orientation, width, height);
+	display_orientation = orientation;
+	display_width = width;
+	display_height = height;
+}
+
+
+int ARCoreWrapper::get_display_orientation() { return display_orientation; }
+int ARCoreWrapper::get_display_width() { return display_width; }
+int ARCoreWrapper::get_display_height() { return display_height; }
+bool ARCoreWrapper::has_viewport_changed() { return viewport_changed; }
+
+
+void ARCoreWrapper::set_viewport_changed(bool changed){ viewport_changed = changed; }

@@ -20,4 +20,8 @@ JNIEXPORT void JNICALL JNI_METHOD(initializeEnvironment)(JNIEnv *env, jobject ac
 JNIEXPORT void JNICALL JNI_METHOD(uninitializeEnvironment)(JNIEnv *env, jobject) {
 	ARCoreWrapper::uninitialize_environment(env);
 }
+JNIEXPORT void JNICALL JNI_METHOD(onDisplayGeometryChanged)(JNIEnv *env, jobject, int display_orientation, int display_width, int display_height){
+	ARCoreWrapper::on_display_geometry_changed(display_orientation, display_width, display_height);
+	ARCoreWrapper::set_viewport_changed(true);
+}
 };

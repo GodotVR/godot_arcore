@@ -20,6 +20,11 @@ private:
 	static jclass godot_class;
 	static jclass activity_class;
 
+	static int display_orientation;
+	static int display_width;
+	static int display_height;
+	static bool viewport_changed;
+
 public:
 	ARCoreWrapper();
 	~ARCoreWrapper();
@@ -28,6 +33,14 @@ public:
 	static jobject get_godot_class();
 	static jobject get_activity();
 	static jobject get_global_context();
+
+	static int get_display_orientation();
+	static int get_display_width();
+	static int get_display_height();
+	static bool has_viewport_changed();
+	static void set_viewport_changed(bool changed);
+
+	static void on_display_geometry_changed(int orientation, int width, int height);
 };
 
 #endif //ARCOREPLUGIN_ARCORE_WRAPPER_H

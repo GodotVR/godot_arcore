@@ -41,6 +41,7 @@ void BackgroundRenderer::initialize(int p_width, int p_height) {
 	}
 }
 
+
 void BackgroundRenderer::uninitialize() {
 	if (m_feed.is_valid()) {
 		m_feed->set_active(false);
@@ -83,6 +84,8 @@ void computeDepth(ArSession &p_ar_session, const ArFrame &p_ar_frame, godot::Ref
 		ArImage_release(depthImage);
 
 		// p_feed->set_external_depthmap(array, width, height);
+	} else {
+		ALOGW("Godot ARCore: Warning: Depth computation requested but not supported");
 	}
 }
 
@@ -90,59 +93,67 @@ void BackgroundRenderer::process(ArSession &p_ar_session, const ArFrame &p_ar_fr
 	// Have ARCore grab a camera frame, load it into our texture object and do its funky SLAM logic
 	ArSession_setCameraTextureName(&p_ar_session, m_camera_texture_id);
 
-	// // Positions of the quad vertices in clip space (X, Y).
-	// static const float kVertices[] = {
-	//         //	-1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, +1.0f, +1.0f,
-	//         0.0f,
-	//         0.0f,
-	//         1.0f,
-	//         0.0f,
-	//         0.0f,
-	//         1.0f,
-	//         1.0f,
-	//         1.0f,
-	// };
-	// //! Maxime : do we need that ?
-	// // If display rotation changed (also includes view size change), we need to
-	// // re-query the uv coordinates for the on-screen portion of the camera image.
-	// int32_t geometry_changed = 0;
-
-	// ArFrame_getDisplayGeometryChanged(&p_ar_session, &p_ar_frame, &geometry_changed);
-	// if (geometry_changed != 0 /*|| !have_display_transform*/)
-	// {
-	//     ALOGV("MCT Godot ARCore: changing_display_transform");
-	//     // update our transformed uvs
-	//     float transformed_uvs[4 * 2];
-	//     ArFrame_transformCoordinates2d(&p_ar_session, &p_ar_frame, AR_COORDINATES_2D_OPENGL_NORMALIZED_DEVICE_COORDINATES, 4, kVertices, AR_COORDINATES_2D_TEXTURE_NORMALIZED, transformed_uvs);
-	//     // have_display_transform = true;
-
-	//     // got to convert these uvs. They seem weird in portrait mode..
-	//     bool shift_x = false;
-	//     bool shift_y = false;
-
-	//     // -1.0 - 1.0 => 0.0 - 1.0
-	//     for (int i = 0; i < 8; i += 2) {
-	//         transformed_uvs[i] = transformed_uvs[i] * 2.0 - 1.0;
-	//         shift_x = shift_x || (transformed_uvs[i] < -0.001);
-	//         transformed_uvs[i + 1] = transformed_uvs[i + 1] * 2.0 - 1.0;
-	//         shift_y = shift_y || (transformed_uvs[i + 1] < -0.001);
-	//     }
-
-	//     // do we need to shift anything?
-	//     if (shift_x || shift_y) {
-	//         for (int i = 0; i < 8; i += 2) {
-	//             if (shift_x) transformed_uvs[i] += 1.0;
-	//             if (shift_y) transformed_uvs[i + 1] += 1.0;
-	//         }
-	//     }
-
-	//     // Convert transformed_uvs to our display transform
-	//     godot::Transform2D display_transform;
-	//     display_transform.columns[0] = Vector2(transformed_uvs[2] - transformed_uvs[0], transformed_uvs[3] - transformed_uvs[1]);
-	//     display_transform.columns[1] = Vector2(transformed_uvs[4] - transformed_uvs[0], transformed_uvs[5] - transformed_uvs[1]);
-	//     display_transform.columns[2] = Vector2(transformed_uvs[0], transformed_uvs[1]);
-	//     m_feed->set_transform(display_transform);
-	// }
+	// Positions of the quad vertices in clip space (X, Y).
+	static const float kVertices[] = {
+	        -1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, +1.0f, +1.0f,
+	};
+	//! Maxime : do we need that ?
+	// If display rotation changed (also includes view size change), we need to
+	// re-query the uv coordinates for the on-screen portion of the camera image.
+	int32_t geometry_changed = 0;
+	ArFrame_getDisplayGeometryChanged(&p_ar_session, &p_ar_frame, &geometry_changed);
+	if (geometry_changed != 0 /*|| !have_display_transform*/)
+	{
+	    ALOGV("MCT Godot ARCore: changing_display_transform");
+	    // update our transformed uvs
+	    float transformed_uvs[4 * 2];
+	    ArFrame_transformCoordinates2d(&p_ar_session, &p_ar_frame, AR_COORDINATES_2D_OPENGL_NORMALIZED_DEVICE_COORDINATES, 4, kVertices, AR_COORDINATES_2D_TEXTURE_NORMALIZED, transformed_uvs);
+	    
+		
+		ALOGV("Tranformed UVs pre-magic:\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n", 
+			transformed_uvs[0], transformed_uvs[2], transformed_uvs[4],  transformed_uvs[6],
+			transformed_uvs[1], transformed_uvs[3], transformed_uvs[5],  transformed_uvs[7]
+		);
+		
+		// // have_display_transform = true;
+   		// // got to convert these uvs. They seem weird in portrait mode..
+	    // bool shift_x = false;
+	    // bool shift_y = false;
+    	// // -1.0 - 1.0 => 0.0 - 1.0
+	    // for (int i = 0; i < 8; i += 2) {
+	    //     transformed_uvs[i] = transformed_uvs[i] * 2.0 - 1.0;
+	    //     shift_x = shift_x || (transformed_uvs[i] < -0.001);
+	    //     transformed_uvs[i + 1] = transformed_uvs[i + 1] * 2.0 - 1.0;
+	    //     shift_y = shift_y || (transformed_uvs[i + 1] < -0.001);
+	    // }
+		// ALOGV("Tranformed UVs post-magic:\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n", 
+		// 	transformed_uvs[0], transformed_uvs[2], transformed_uvs[4],  transformed_uvs[6],
+		// 	transformed_uvs[1], transformed_uvs[3], transformed_uvs[5],  transformed_uvs[7]
+		// );
+    	// // do we need to shift anything?
+	    // if (shift_x || shift_y) {
+	    //     for (int i = 0; i < 8; i += 2) {
+	    //         if (shift_x) transformed_uvs[i] += 1.0;
+	    //         if (shift_y) transformed_uvs[i + 1] += 1.0;
+	    //     }
+	    // }
+		// ALOGV("Tranformed UVs post-shift:\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n", 
+		// 	transformed_uvs[0], transformed_uvs[2], transformed_uvs[4],  transformed_uvs[6],
+		// 	transformed_uvs[1], transformed_uvs[3], transformed_uvs[5],  transformed_uvs[7]
+		// );
+    // Convert transformed_uvs to our display transform
+	    godot::Transform2D display_transform;
+	    display_transform.columns[0] = Vector2(transformed_uvs[2] - transformed_uvs[0], transformed_uvs[3] - transformed_uvs[1]);
+	    display_transform.columns[1] = Vector2(transformed_uvs[4] - transformed_uvs[0], transformed_uvs[5] - transformed_uvs[1]);
+	    
+		
+		display_transform.columns[2] = Vector2(transformed_uvs[0], transformed_uvs[1]);
+		
+		ALOGV("New display transform TRANSPOSE:\n[%f, %f, %f]\n[%f, %f, %f]\n", 
+			display_transform.columns[0][0], display_transform.columns[1][0], display_transform.columns[2][0], 
+			display_transform.columns[0][1], display_transform.columns[1][1], display_transform.columns[2][1]);
+	    m_feed->set_transform(display_transform);
+	}
 
 	if (p_enable_depth_estimation) {
 		computeDepth(p_ar_session, p_ar_frame, m_feed);

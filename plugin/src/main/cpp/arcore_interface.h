@@ -15,7 +15,9 @@
 #include "background_renderer.h"
 #include "instances_renderer.h"
 #include "plane_renderer.h"
+#include "plane_tracker.h"
 #include "point_cloud_renderer.h"
+#include "image_tracker.h"
 
 namespace godot {
 class ARCoreInterface : public XRInterfaceExtension {
@@ -76,7 +78,7 @@ public:
 	void enable_vertical_plane_detection(bool p_enable);
 	void enable_horizontal_plane_detection(bool p_enable);
 	void enable_instant_placement(bool p_enable);
-	godot::Transform3D getHitPose(float p_pixel_x, float p_pixel_y, float p_approximate_distance_meters);
+	godot::Transform3D getHitPose(float p_pixel_x, float p_pixel_y);
 	godot::Transform3D getHitRayPose(const godot::Vector3 &p_origin, const godot::Vector3 &p_direction);
 	void enable_images_detection(bool p_enable);
 	void set_node_images_mapping(const godot::Dictionary &in_nodeImagesMap);
@@ -86,6 +88,21 @@ public:
 	godot::Vector4 get_light_color_correction();
 	godot::Vector3 get_light_main_hdr_direction();
 	godot::Vector3 get_light_main_hdr_intensity();
+
+	void image_tracker_database_create();
+	godot::PackedByteArray image_tracker_database_get_serialized();
+	void image_tracker_database_load(const godot::PackedByteArray &db);
+	void image_tracker_database_add_image(godot::Ref<godot::Image> img, const godot::String &img_identifier, float img_phyisical_width = -1.0);
+	bool image_tracker_get_image_tracking_status(const godot::String &img_identifier);
+	godot::Transform3D image_tracker_get_tracked_transform(const godot::String &img_identifier);
+
+	godot::Array plane_tracker_get_all_plane_ids();
+	godot::Array plane_tracker_get_plane_boundary(int plane_id);
+	godot::Transform3D plane_tracker_get_plane_transform(int plane_id);
+	int plane_tracker_get_plane_parent(int plane_id);
+	
+
+	godot::Ref<godot::CameraFeed> get_camera_feed();
 
 	float getNear() { return m_z_near; }
 	float getFar() { return m_z_far; }
@@ -101,8 +118,10 @@ private:
 
 	arcore_plugin::BackgroundRenderer m_background_renderer;
 	arcore_plugin::PlaneRenderer m_plane_renderer;
+	arcore_plugin::PlaneTracker m_plane_tracker;
 	arcore_plugin::InstancesRenderer m_instances_renderer;
 	arcore_plugin::PointCloudRenderer m_point_cloud_renderer;
+	arcore_plugin::ImageTracker m_image_tracker;
 
 	InitStatus m_init_status;
 	ArSession *m_ar_session;
@@ -132,8 +151,6 @@ private:
 	godot::Vector3 m_light_env_hdr_main_light_intensity;
 
 	void configureSession();
-
-	void handleScreenOrientationChange();
 
 	void estimateLight();
 };

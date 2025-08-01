@@ -1,3 +1,4 @@
+#include "ar_utils.h"
 #include "arcore_interface.h"
 #include "arcore_wrapper.h"
 #include "utils.h"
@@ -20,6 +21,7 @@ void ARCoreInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("enable_vertical_plane_detection"), &ARCoreInterface::enable_vertical_plane_detection);
 	ClassDB::bind_method(D_METHOD("enable_horizontal_plane_detection"), &ARCoreInterface::enable_horizontal_plane_detection);
 	ClassDB::bind_method(D_METHOD("enable_instant_placement"), &ARCoreInterface::enable_instant_placement);
+	ClassDB::bind_method(D_METHOD("get_camera_feed"), &ARCoreInterface::get_camera_feed);
 	ClassDB::bind_method(D_METHOD("getHitPose"), &ARCoreInterface::getHitPose);
 	ClassDB::bind_method(D_METHOD("getHitRayPose"), &ARCoreInterface::getHitRayPose);
 	ClassDB::bind_method(D_METHOD("enable_images_detection"), &ARCoreInterface::enable_images_detection);
@@ -30,9 +32,22 @@ void ARCoreInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_light_color_correction"), &ARCoreInterface::get_light_color_correction);
 	ClassDB::bind_method(D_METHOD("get_light_main_hdr_direction"), &ARCoreInterface::get_light_main_hdr_direction);
 	ClassDB::bind_method(D_METHOD("get_light_main_hdr_intensity"), &ARCoreInterface::get_light_main_hdr_intensity);
+	ClassDB::bind_method(D_METHOD("image_tracker_database_create"), &ARCoreInterface::image_tracker_database_create);
+	ClassDB::bind_method(D_METHOD("image_tracker_database_add_image"), &ARCoreInterface::image_tracker_database_add_image);
+	ClassDB::bind_method(D_METHOD("image_tracker_database_get_serialized"), &ARCoreInterface::image_tracker_database_get_serialized);
+	ClassDB::bind_method(D_METHOD("image_tracker_database_load"), &ARCoreInterface::image_tracker_database_load);
+	ClassDB::bind_method(D_METHOD("image_tracker_get_image_tracking_status"), &ARCoreInterface::image_tracker_get_image_tracking_status);
+	ClassDB::bind_method(D_METHOD("image_tracker_get_tracked_transform"), &ARCoreInterface::image_tracker_get_tracked_transform);
+	ClassDB::bind_method(D_METHOD("plane_tracker_get_all_plane_ids"), &ARCoreInterface::plane_tracker_get_all_plane_ids);
+	ClassDB::bind_method(D_METHOD("plane_tracker_get_plane_boundary"), &ARCoreInterface::plane_tracker_get_plane_boundary);
+	ClassDB::bind_method(D_METHOD("plane_tracker_get_plane_transform"), &ARCoreInterface::plane_tracker_get_plane_transform);
+	ClassDB::bind_method(D_METHOD("plane_tracker_get_plane_parent"), &ARCoreInterface::plane_tracker_get_plane_parent);
+
 	ClassDB::bind_method(D_METHOD("getNear"), &ARCoreInterface::getNear);
 	ClassDB::bind_method(D_METHOD("getFar"), &ARCoreInterface::getFar);
 }
+
+
 
 ARCoreInterface::ARCoreInterface() {
 	m_init_status = NOT_INITIALISED;
@@ -69,6 +84,7 @@ XRInterface::TrackingStatus ARCoreInterface::_get_tracking_status() const {
 
 void ARCoreInterface::start() {
 	ALOGV("ARCoreInterface::start()");
+	printf("CSTM: ARCoreInterface::start()");
 }
 
 void ARCoreInterface::_resume() {
@@ -108,6 +124,14 @@ int32_t ARCoreInterface::_get_camera_feed_id() const {
 }
 
 void ARCoreInterface::enable_depth_estimation(bool p_enable) {
+	ALOGW("Godot ARCore: Requestiing depth estimation");
+	printf("CSTM: Godot ARCore: Requestiing depth estimation");
+
+	if(!is_depth_supported()){
+		ALOGW("Godot ARCore: Requested depth estimation, but is not supported, aborting");
+		printf("CSTM: Godot ARCore: Requested depth estimation, but is not supported, aborting");
+		return;
+	}
 	m_enable_depth_estimation = p_enable;
 	configureSession();
 }
@@ -212,78 +236,165 @@ Vector3 ARCoreInterface::get_light_main_hdr_intensity() {
 	return res;
 }
 
-Transform3D ARCoreInterface::getHitPose(float p_pixel_x, float p_pixel_y, float p_approximate_distance_meters) {
+godot::Ref<godot::CameraFeed> ARCoreInterface::get_camera_feed() {
+	if(m_init_status != INITIALISED) return godot::Ref<godot::CameraFeed>();
+	return m_background_renderer.getFeed();
+}
+
+Transform3D ARCoreInterface::getHitPose(float p_pixel_x, float p_pixel_y) {
 	Transform3D res;
-	if (m_enable_instant_placement) {
-		ArHitResultList *hit_result_list = nullptr;
-		ArFrame_hitTestInstantPlacement(m_ar_session, m_ar_frame, p_pixel_x, p_pixel_y, p_approximate_distance_meters, hit_result_list);
 
-		int32_t size = 0;
-		ArHitResultList_getSize(m_ar_session, hit_result_list, &size);
-		float currentMinDistance = std::numeric_limits<float>::max();
+	
+	ALOGV("Godot ARCore: Casting screen ray...\n");
 
-		for (int32_t i = 0; i < size; ++i) {
-			ArHitResult *hit_result = nullptr;
-			ArHitResultList_getItem(m_ar_session, hit_result_list, i, hit_result);
-			ArPose *pose = nullptr;
-			ArHitResult_getHitPose(m_ar_session, hit_result, pose);
-			float distance = std::numeric_limits<float>::max();
-			ArHitResult_getDistance(m_ar_session, hit_result, &distance);
+	ArHitResultList *hit_result_list = nullptr;
+	ArHitResultList_create(m_ar_session, &hit_result_list);
+	ArFrame_hitTest(m_ar_session, m_ar_frame, p_pixel_x, p_pixel_y, hit_result_list);
 
-			if (distance < currentMinDistance) {
-				float mat4[16];
-				ArPose_getMatrix(m_ar_session, pose, mat4);
-				res = to_godot_transform(mat4);
-			}
+	int32_t size = 0;
+	ArHitResultList_getSize(m_ar_session, hit_result_list, &size);
+	float currentMinDistance = std::numeric_limits<float>::max();
+
+	ALOGV("Hitlist contains %d results\n", size);
+
+	if (size > 0){
+		ArHitResult *hit_result = nullptr;
+		ArHitResult_create(m_ar_session, &hit_result);
+		ArHitResultList_getItem(m_ar_session, hit_result_list, 0, hit_result);
+		arcore_plugin::ScopedArPose scopedArPose(m_ar_session);
+		ArHitResult_getHitPose(m_ar_session, hit_result, scopedArPose.GetArPose());
+		float distance = std::numeric_limits<float>::max();
+		ArHitResult_getDistance(m_ar_session, hit_result, &distance);
+
+		if (distance < currentMinDistance) {
+			float mat4[16];
+			ArPose_getMatrix(m_ar_session, scopedArPose.GetArPose(), mat4);
+			res = to_godot_transform(mat4);
 		}
-	} else {
-		ALOGW("Godot ARCore: getHitPose called but instant placement is not enabled");
+	
+		ArHitResult_destroy(hit_result);
 	}
+	ArHitResultList_destroy(hit_result_list);
+
 
 	return res;
 }
 
 Transform3D ARCoreInterface::getHitRayPose(const Vector3 &p_origin, const Vector3 &p_direction) {
 	Transform3D res;
-	if (m_enable_instant_placement) {
-		float ray_origin_3[3]{ p_origin.x, p_origin.y, p_origin.z };
-		float ray_direction_3[3]{ p_origin.x, p_origin.y, p_origin.z };
-		ArHitResultList *hit_result_list = nullptr;
-		ArFrame_hitTestRay(m_ar_session, m_ar_frame, ray_origin_3, ray_direction_3, hit_result_list);
 
-		int32_t size = 0;
-		ArHitResultList_getSize(m_ar_session, hit_result_list, &size);
-		float currentMinDistance = std::numeric_limits<float>::max();
+	float ray_origin_3[3]{ p_origin.x, p_origin.y, p_origin.z };
+	float ray_direction_3[3]{ p_origin.x, p_origin.y, p_origin.z };
+	ArHitResultList *hit_result_list = nullptr;
+	ArHitResultList_create(m_ar_session, &hit_result_list);
+	ArFrame_hitTestRay(m_ar_session, m_ar_frame, ray_origin_3, ray_direction_3, hit_result_list);
+	
+	ALOGV("Godot ARCore: Casting ray...\n");
+	
+	int32_t size = 0;
+	ArHitResultList_getSize(m_ar_session, hit_result_list, &size);
+	float currentMinDistance = std::numeric_limits<float>::max();
 
-		for (int32_t i = 0; i < size; ++i) {
-			ArHitResult *hit_result = nullptr;
-			ArHitResultList_getItem(m_ar_session, hit_result_list, i, hit_result);
-			ArPose *pose = nullptr;
-			ArHitResult_getHitPose(m_ar_session, hit_result, pose);
-			float mat4[16];
-			ArPose_getMatrix(m_ar_session, pose, mat4);
-			Transform3D trsf = to_godot_transform(mat4);
-			Vector3 target = trsf.get_origin();
-			float distance = (target - Vector3(ray_origin_3[0], ray_origin_3[1], ray_origin_3[2])).length();
+	ALOGV("Hitlist contains %d results\n", size);
 
-			if (distance < currentMinDistance) {
-				res = trsf;
-			}
+	if(size > 0) {
+		ArHitResult *hit_result = nullptr;
+		ArHitResult_create(m_ar_session, &hit_result);
+		// Only get first result, which is the closest per definition
+		ArHitResultList_getItem(m_ar_session, hit_result_list, 0, hit_result);
+
+		arcore_plugin::ScopedArPose scopedArPose(m_ar_session);
+		ArHitResult_getHitPose(m_ar_session, hit_result, scopedArPose.GetArPose());
+		float mat4[16];
+		ArPose_getMatrix(m_ar_session, scopedArPose.GetArPose(), mat4);
+		Transform3D trsf = to_godot_transform(mat4);
+		Vector3 target = trsf.get_origin();
+		float distance = (target - p_origin).length();
+
+		if (distance < currentMinDistance) {
+			res = trsf;
 		}
-	} else {
-		ALOGW("Godot ARCore: getHitRayPose called but instant placement is not enabled");
+
+		ArHitResult_destroy(hit_result);
 	}
+	ArHitResultList_destroy(hit_result_list);
 
 	return res;
 }
 
 void ARCoreInterface::set_node_images_mapping(const Dictionary &in_nodeImagesMap) {
+	ALOGV("Godot ARCore: Requested image tracking of %ld images\n", in_nodeImagesMap.size());
 	if (m_enable_images_detection) {
-		m_instances_renderer.set_node_images_mapping(in_nodeImagesMap);
+		m_instances_renderer.set_node_images_mapping(m_ar_session, in_nodeImagesMap);
+
+		// dunno if this is required, put this when debugging
+		configureSession();
+
 	} else {
 		ALOGW("Godot ARCore: set_node_images_mapping called but images detection is not enabled");
 	}
 }
+
+
+
+void ARCoreInterface::image_tracker_database_create(){
+	ALOGV("Creating new image tracker database and updating session config\n");
+	m_image_tracker.createFreshDatabase(m_ar_session);
+	configureSession();
+}
+
+void ARCoreInterface::image_tracker_database_load(const godot::PackedByteArray &db){
+	m_image_tracker.loadSerializedDatabase(m_ar_session, db.ptr(), db.size());
+	configureSession();
+}
+
+godot::PackedByteArray ARCoreInterface::image_tracker_database_get_serialized(){
+	uint8_t *data;
+	int64_t size;
+	m_image_tracker.serializeDatabase(m_ar_session, &data, &size);
+
+	// TODO look into this
+	// copy :( is there another way to send this in godot world??
+	// ArString release is expected, but is it needed?? https://developers.google.com/ar/reference/c/group/ar-augmented-image-database#araugmentedimagedatabase_serialize
+	// Also, would using a PackedInt64 be faster?
+	PackedByteArray pba;
+	pba.resize(size);
+	for(int64_t i = 0; i < size; i++) pba.set(i,data[i]);
+	ArByteArray_release(data);
+	return pba;
+}
+
+void ARCoreInterface::image_tracker_database_add_image(godot::Ref<godot::Image> img, const godot::String &img_identifier, float img_physical_width){
+	m_image_tracker.registerImageForTracking(m_ar_session, img.ptr(), img_identifier, img_physical_width);
+	configureSession();
+}
+
+bool ARCoreInterface::image_tracker_get_image_tracking_status(const godot::String &img_identifier){
+	return m_image_tracker.getImageTrackingStatus(m_ar_session, img_identifier);
+}
+
+godot::Transform3D ARCoreInterface::image_tracker_get_tracked_transform(const godot::String &img_identifier){
+	float *mat;
+	m_image_tracker.getImageTransformMatrix(m_ar_session, img_identifier, &mat);
+	return to_godot_transform(mat);
+}
+
+
+godot::Array ARCoreInterface::plane_tracker_get_all_plane_ids(){
+	return m_plane_tracker.getAllAvailablePlaneIds();
+}
+godot::Array ARCoreInterface::plane_tracker_get_plane_boundary(int plane_id){
+	return m_plane_tracker.getPlaneBoundary(plane_id);
+}
+godot::Transform3D ARCoreInterface::plane_tracker_get_plane_transform(int plane_id){
+	float *mat4;
+	m_plane_tracker.getPlaneTransformMatrix(plane_id, &mat4);
+	return to_godot_transform(mat4);
+}
+int ARCoreInterface::plane_tracker_get_plane_parent(int plane_id){
+	return m_plane_tracker.getPlaneParentId(plane_id);
+}
+
 
 bool ARCoreInterface::_is_initialized() const {
 	// If we are in the process of initialising, we treat it as initialised
@@ -331,18 +442,25 @@ bool ARCoreInterface::_initialize() {
 			}
 
 			// Get the screen size
-			Size2 size = DisplayServer::get_singleton()->screen_get_size();
+			Size2 screen_size = DisplayServer::get_singleton()->screen_get_size();
 
-			if (size.x > size.y) {
-				m_screen_width = size.y;
-				m_screen_height = size.x;
+			if(screen_size.y > screen_size.x){
+				// hope we are on a phone
+				m_display_orientation = Orientation::ROTATION_0;
+		
+				m_screen_height = screen_size.x;
+				m_screen_width = screen_size.y;
 			} else {
-				m_screen_width = size.x;
-				m_screen_height = size.y;
+				m_display_orientation = Orientation::ROTATION_90;
+		
+				m_screen_width = screen_size.x;
+				m_screen_height = screen_size.y;
 			}
+			
 
 			// Trigger a display rotation
-			m_display_orientation = Orientation::UNKNOWN;
+			m_display_orientation = Orientation::ROTATION_0;
+
 
 			// Everything is initialised
 			m_init_status = INITIALISED;
@@ -364,6 +482,9 @@ bool ARCoreInterface::_initialize() {
 		}
 
 		m_background_renderer.initialize(m_screen_width, m_screen_height);
+		m_image_tracker.initialize(m_ar_session);
+		m_instances_renderer.initalize(&m_image_tracker);
+
 
 		configureSession();
 	}
@@ -474,73 +595,6 @@ void ARCoreInterface::_post_draw_viewport(const RID &p_render_target, const Rect
 	add_blit(p_render_target, src_rect, dst_rect, false, 0, false, Vector2(), 0, 0, 0.0, 1.0);
 }
 
-// void ARCoreInterface::handleScreenOrientationChanges()
-// {
-//     DisplayServer::ScreenOrientation orientation = DisplayServer::get_singleton()->screen_get_orientation(DisplayServer::get_singleton()->get_primary_screen());
-//     Orientation display_rotation = Orientation::UNKNOWN;
-
-//     switch (orientation)
-//     {
-//     case DisplayServer::SCREEN_LANDSCAPE:
-//         // ALOGE("MCT Godot ARCore: in SCREEN_LANDSCAPE mode");
-//         display_rotation = Orientation::ROTATION_90;
-//         break;
-//     case DisplayServer::SCREEN_PORTRAIT:
-//         // ALOGE("MCT Godot ARCore: in SCREEN_PORTRAIT mode");
-//         display_rotation = Orientation::ROTATION_0;
-//         break;
-
-//     case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
-//         // ALOGE("MCT Godot ARCore: in SCREEN_REVERSE_LANDSCAPE mode");
-//         display_rotation = Orientation::ROTATION_270;
-//         break;
-
-//     case DisplayServer::SCREEN_REVERSE_PORTRAIT:
-//         // ALOGE("MCT Godot ARCore: in SCREEN_REVERSE_PORTRAIT mode");
-//         display_rotation = Orientation::ROTATION_180;
-//         break;
-
-//     case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
-//         // ALOGE("MCT Godot ARCore: in SCREEN_SENSOR_LANDSCAPE mode");
-//         display_rotation = Orientation::ROTATION_90;
-//         break;
-
-//     case DisplayServer::SCREEN_SENSOR_PORTRAIT:
-//         // ALOGE("MCT Godot ARCore: in SCREEN_SENSOR_PORTRAIT mode");
-//         display_rotation = Orientation::ROTATION_0;
-//         break;
-
-//     case DisplayServer::SCREEN_SENSOR:
-//         // ALOGE("Godot ARCore: SCREEN_SENSOR mode not handle yet");
-//         display_rotation = Orientation::UNKNOWN; //TODO
-//         break;
-//     default:
-//         // ALOGE("MCT Godot ARCore: in some other screen orientation mode");
-//         break;
-//     }
-//     //! Maxime: Todo: Correctly handle orientation changes
-//     // display_rotation = Orientation::VERTICAL;
-
-//     Vector2i screen_size = DisplayServer::get_singleton()->screen_get_size();
-//     ALOGE("MCT screen_size = %d, %d", screen_size.x, screen_size.y);
-
-//     if (m_display_rotation != display_rotation)
-//     {
-//         m_display_rotation = display_rotation;
-//         if (m_display_rotation == Orientation::ROTATION_90 || m_display_rotation == Orientation::ROTATION_270)
-//         {
-//             int tmp = m_height;
-//             m_height = m_width;
-//             m_width = tmp;
-//         }
-
-//         const int32_t c_ar_core_orientation = (int32_t)(Orientation::ROTATION_90); // For now, only godot's Landscape mode works with ARCore
-//         ArSession_setDisplayGeometry(m_ar_session, c_ar_core_orientation, m_width, m_height);
-
-//         ALOGV("MCT Godot ARCore: Window orientation changes to %d (%d, %d)", m_display_rotation, m_width, m_height);
-//     }
-// }
-
 void ARCoreInterface::estimateLight() {
 	// Get light estimation value.
 	ArLightEstimate *ar_light_estimate;
@@ -636,7 +690,19 @@ void ARCoreInterface::_process() {
 		return;
 	}
 
-	ArSession_setDisplayGeometry(m_ar_session, (int32_t)(Orientation::ROTATION_90), m_screen_height, m_screen_width);
+	if(ARCoreWrapper::has_viewport_changed()){
+		ALOGV("Godot ARCore Interface: detected viewport change");
+		
+		m_display_orientation = static_cast<Orientation>(ARCoreWrapper::get_display_orientation());
+		m_screen_width = ARCoreWrapper::get_display_width();
+		m_screen_height = ARCoreWrapper::get_display_height();
+		
+		ALOGV("Orientation: %d, screen dims: %d x %d\n", m_display_orientation, m_screen_width, m_screen_height);
+		
+		ArSession_setDisplayGeometry(m_ar_session, (int32_t)(m_display_orientation), m_screen_width, m_screen_height);
+		
+		ARCoreWrapper::set_viewport_changed(false);
+	}
 	ArSession_setCameraTextureName(m_ar_session, m_background_renderer.getTextureId());
 
 	if (ArSession_update(m_ar_session, m_ar_frame) != AR_SUCCESS) {
@@ -702,12 +768,13 @@ void ARCoreInterface::_process() {
 	}
 
 	if (m_enable_vertical_plane_detection || m_enable_horizontal_plane_detection) {
-		m_plane_renderer.process(*m_ar_session);
+		m_plane_tracker.process(m_ar_session, m_ar_frame);
 	} else {
-		m_plane_renderer.clear();
+		m_plane_tracker.reset();
 	}
 
 	if (m_enable_images_detection) {
+		m_image_tracker.process(*m_ar_session, *m_ar_frame);
 		m_instances_renderer.process(*m_ar_session);
 	} else {
 		m_instances_renderer.clear();
@@ -777,6 +844,9 @@ void ARCoreInterface::configureSession() {
 	} else {
 		ArConfig_setPlaneFindingMode(m_ar_session, ar_config, AR_PLANE_FINDING_MODE_DISABLED);
 	}
+
+	ALOGV("Godot ARCore: Session reconfigured, active image db is now %p\n", m_image_tracker.getActiveDatabase());
+	ArConfig_setAugmentedImageDatabase(m_ar_session, ar_config, m_image_tracker.getActiveDatabase());
 
 	ERR_FAIL_NULL(ar_config);
 	ERR_FAIL_COND(ArSession_configure(m_ar_session, ar_config) != AR_SUCCESS);

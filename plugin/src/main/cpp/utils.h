@@ -120,4 +120,8 @@ static inline godot::Transform3D to_godot_transform(const float p_matrix[16]) {
 			godot::Vector3(p_matrix[12], p_matrix[13], p_matrix[14]));
 }
 
+static inline godot::Vector3 to_godot_position(const float p_matrix[16]){
+	return godot::Vector3(p_matrix[12], p_matrix[13], p_matrix[14]);
+}
+
 #endif // UTILS_H

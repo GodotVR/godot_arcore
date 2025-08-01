@@ -23,6 +23,7 @@ ARCoreInterfaceInstance="*res://addons/ARCorePlugin/ARCoreInterface.gd"
 
 window/size/mode=3
 window/size/resizable=false
+window/handheld/orientation=6
 
 [editor_plugins]
 

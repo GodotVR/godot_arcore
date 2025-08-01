@@ -1,12 +1,22 @@
-[gd_scene load_steps=13 format=3 uid="uid://b0n6vtr0gl6l3"]
+[gd_scene load_steps=20 format=3 uid="uid://b0n6vtr0gl6l3"]
 
-[ext_resource type="Script" path="res://MeshInstance3D.gd" id="1_0ufg4"]
-[ext_resource type="Script" path="res://main3D.gd" id="1_a4ilg"]
+[ext_resource type="Script" uid="uid://cl1senhkb7cw0" path="res://MeshInstance3D.gd" id="1_0ufg4"]
+[ext_resource type="Script" uid="uid://dri7o8k3ojxs5" path="res://main3D.gd" id="1_a4ilg"]
+[ext_resource type="Material" uid="uid://bx5fypg8vpbdc" path="res://sky_camera_shader_material.tres" id="2_44ouq"]
+[ext_resource type="Image" uid="uid://dts6yjbc0jd2i" path="res://Godot_ARCoreExample.png" id="2_auif7"]
+[ext_resource type="PackedScene" uid="uid://brxoo1l3oentm" path="res://tracked_plane.tscn" id="2_rdgcd"]
 [ext_resource type="PackedScene" uid="uid://cglxfqvt03e63" path="res://ui.tscn" id="3_rflmv"]
-[ext_resource type="PackedScene" uid="uid://cb26lopdx85mb" path="res://ruler.blend" id="4_qfgab"]
+[ext_resource type="PackedScene" uid="uid://bkoj7y68ypvph" path="res://ruler.blend" id="4_qfgab"]
+[ext_resource type="Script" uid="uid://trwnuy6mebmj" path="res://addons/ARCorePlugin/TrackedToImageComponent.gd" id="6_jvady"]
+[ext_resource type="PackedScene" uid="uid://c64yix7y4oc2d" path="res://StickNode.tscn" id="6_u4qf1"]
+[ext_resource type="Script" uid="uid://dvd7shnv4aqkh" path="res://click_detect.gd" id="8_jvady"]
+
+[sub_resource type="Sky" id="Sky_rdgcd"]
+sky_material = ExtResource("2_44ouq")
 
 [sub_resource type="Environment" id="Environment_p5o4h"]
-background_mode = 5
+background_mode = 2
+sky = SubResource("Sky_rdgcd")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uqmg6"]
 albedo_color = Color(0.839216, 0.458824, 0.811765, 1)
@@ -34,15 +44,18 @@ size = Vector3(0.2, 0.2, 0.2)
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_a4ilg")
+trackedPlaneScene = ExtResource("2_rdgcd")
+skyCamMaterial = ExtResource("2_44ouq")
 
-[node name="Origin3D" type="Node3D" parent="."]
+[node name="XROrigin3D" type="XROrigin3D" parent="."]
 
-[node name="Camera3D" type="Camera3D" parent="Origin3D"]
+[node name="XRCamera3D" type="XRCamera3D" parent="XROrigin3D"]
 environment = SubResource("Environment_p5o4h")
 far = 10.23
 
 [node name="Pink" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.295, -0.995)
+visible = false
 material_override = SubResource("StandardMaterial3D_uqmg6")
 mesh = SubResource("PrismMesh_erelu")
 script = ExtResource("1_0ufg4")
@@ -52,17 +65,45 @@ transform = Transform3D(0.7839, 0.442961, 0.43507, -0.589591, 0.750733, 0.297964
 
 [node name="Green" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, -2.001)
+visible = false
 material_override = SubResource("StandardMaterial3D_46dqb")
 mesh = SubResource("PrismMesh_tcft2")
 
 [node name="Blue" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.529, -3)
+visible = false
 mesh = SubResource("PrismMesh_kr2qi")
 
 [node name="Node2D" parent="." instance=ExtResource("3_rflmv")]
+visible = false
 
 [node name="ruler" parent="." instance=ExtResource("4_qfgab")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, -0.575, -1)
+visible = false
+
+[node name="ImageTracked" type="Node3D" parent="."]
+
+[node name="Node3D2" parent="ImageTracked" instance=ExtResource("6_u4qf1")]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, -1, 0)
+
+[node name="Node" type="Node" parent="ImageTracked/Node3D2"]
+script = ExtResource("6_jvady")
+trackedImage = ExtResource("2_auif7")
+position_offset = Vector3(0, 0.3, 0)
+maxDistanceRender = 1.0
+x_rotation_mix = 0
+y_rotation_mix = 0
+z_rotation_mix = 0
+
+[node name="ClickDetect" type="TextureButton" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+action_mode = 0
+ignore_texture_size = true
+script = ExtResource("8_jvady")
 
 [connection signal="estimate_depthmap_toggled" from="Node2D" to="." method="_on_node_2d_estimate_depthmap_toggled"]
 [connection signal="far_changed" from="Node2D" to="." method="_on_node_2d_far_changed"]
@@ -74,3 +115,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, -0.575, -1)
 [connection signal="show_depthmap_toggled" from="Node2D" to="." method="_on_node_2d_show_depthmap_toggled"]
 [connection signal="switch_orientation" from="Node2D" to="." method="_on_node_2d_switch_orientation"]
 [connection signal="vertical_planes_toggled" from="Node2D" to="." method="_on_node_2d_vertical_planes_toggled"]
+[connection signal="button_down" from="ClickDetect" to="ClickDetect" method="_on_button_down"]
+[connection signal="gui_input" from="ClickDetect" to="ClickDetect" method="_on_gui_input"]
+[connection signal="onScreenTouchDown" from="ClickDetect" to="." method="_on_screen_touch_down"]
